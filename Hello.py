@@ -84,9 +84,11 @@ class DocumentManager:
         if os.path.exists(file_name):
             with open(file_name,"r") as f:
                 try:
-                    data.json.load(f)
+                    data = json.load(f)
                 except json.JSONDecodeError:
                     data = []
+        for doc in self.documents:
+            data.append(doc.__dict__)
 
     def load_from_json(self, file_name):
         pass
