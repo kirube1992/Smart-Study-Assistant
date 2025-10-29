@@ -1,46 +1,3 @@
-
-# my_dictionary = {}
-
-# def add_document(file_path):
-#     try:
-#         with open(file_path, 'r') as f:
-#             content = f.read()
-#             my_dictionary[file_path] = content
-#             print(f"Succesfully added '{file_path}'.")
-#     except FileNotFoundError:
-#         print(f"Error: File '{file_path}' does not exist.")
-#     except Exception as e:
-#         print(f"An unexpected error occurred while adding '{file_path}': {e}")
-# def list_documents():
-#     if len(my_dictionary) > 0:
-#         for file_path in my_dictionary:
-#             print(file_path)
-#         print('end of the list')
-#     else:
-#         print('There is no file in the dictionary')
-
-# while True:
-#     command = input(">>>").strip()
-#     part = command.split()
-
-#     if len(part) == 0:
-#         continue
-#     if part[0] == 'add_document':
-#         if len(part) < 2:
-#           file_path = input('please enter the file Path').strip()
-#         else:
-#             file_path = " ".join(part[1:])
-#             file_path = part[1]
-#             add_document(file_path)
-#             print(f"Attempted to add '{file_path}'. Check console for errors.")
-#     elif part[0] == 'list_documents':
-#         list_documents()
-#     elif part[0] == 'exit':
-#         print('good bye')
-#         break
-#     else:
-#         print('You enter wrong input')
-    
 from datetime import datetime, date
 import json
 import os
@@ -59,7 +16,7 @@ class Document:
 class DocumentManager:
     def __init__(self):
         self.documents = []
-    def add_document(self, file_path):
+    def Add_document(self, file_path):
         if not os.path.exists(file_path):
             print("File not found!")
             return 
@@ -79,7 +36,7 @@ class DocumentManager:
             for doc in self.documents:
                 print(doc)
     def save_to_json(self,file_name):
-        data = []
+        data = [doc.__dict__ for doc in self.documents]
 
         if os.path.exists(file_name):
             with open(file_name,"r") as f:
@@ -89,14 +46,36 @@ class DocumentManager:
                     data = []
         for doc in self.documents:
             data.append(doc.__dict__)
+        with open(file_name,"w") as f:
+            json.dump(data,f,indent=4)
+        print(f"Saved {len(self.documents)} document(s) to {file_name}")
 
     def load_from_json(self, file_name):
-        pass
-# if __name__ == "__main__":
-#     manager = DocumentManager()
-#     manager.add_document("Test.txt")
-# print(manager.list_documents)
-manager = DocumentManager()
-manager.add_document("Test.txt")   # make sure this file exists
-manager.list_documents()
+        if  not os.path.exists(file_name):
+            print('No json file found')
+            return
+        try:
+            with open(file_name, "r") as f:
+                data = json.load(f)
+                for entry in data:
+                    doc = Document(
+                        title=entry["title"],
+                        content=entry["content"],
+                        file_path=entry["file_path"],
+                        ingestion_date=entry["ingestion_date"]
+                    )
+                    self.documents.append(doc)
+        except Exception as e:
+            print(f"Error loading json {e}")
 
+# manager = DocumentManager()
+# doc1 = Document("Test1", "Content 1", "file1.txt", datetime.now().isoformat())
+# doc2 = Document("Test2", "Content 2", "file2.txt", datetime.now().isoformat())
+# manager.documents.extend([doc1, doc2])
+# manager.save_to_json("documents.json")
+
+
+# print("\n--- Fresh Start ---")
+# new_manager = DocumentManager()
+# new_manager.load_from_json("documents.json")
+# new_manager.list_documents()
