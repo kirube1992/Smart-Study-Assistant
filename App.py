@@ -18,19 +18,28 @@ class DocumentManager:
         self.storage_file = storage_file
         self.documents = []
         self._load_initial_documents()       
-    def add_document(self, file_path):
-        if not os.path.exists(file_path):
-            print("File not found!")
-            return 
-        with open(file_path, 'r') as f:
-            content = f.read()
-        title = os.path.basename(file_path)
-        ingestion_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        document = Document(title, content, file_path, ingestion_date)
-        self.documents.append(document)
-        print(f"Added: {title}")
-        # ingestion_date = date.today()
+    def add_document(self):
+        if os.path.exists(self.storage_file):
+            try:
+                with open(self.storage_file, "r") as f:
+                    data = json.load(f)
+                    for entry in data:
+                        if not any(doc.file_path == entry["file_path"] for doc in self.documents):
+                            doc = Document(
+                                title=entry["title"],
+                                content=entry["Content"],
+                                file_path=entry["file_path"],
+                                ingestion_data=entry["ingestion_date"]
+                            )
+                            self.documents.append(doc)
+                print(f"Loaded {len(self.documents)} document(s) from {self.storage_file}.")
+            except json.JSONDecoderError:
+                print(f"Warning: {self.storage_file} is empty or malformed. Starting fresh.")
+                self.documents = []
+                print(f"Warning: {self.storage_file} is empty or malformed. Starting fresh.")
+                self.documents = []
+        else:
+            print(f"No existing storage file '{self.storage_file}' found. Starting fresh.")
     def list_documents(self):
         if not self.documents:
             print('No documents is found')
