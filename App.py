@@ -44,8 +44,10 @@ class DocumentManager:
         if not self.documents:
             print('No documents is found')
         else:
-            for doc in self.documents:
-                print(doc)  
+            print("\n--- Current Documents ---")
+            for i,  doc in self.documents:
+                print(f"{i+1}.{doc}")
+            print("-------------------------\n")
     def save_to_json(self,file_name):
         # data = [doc.__dict__ for doc in self.documents]
 
