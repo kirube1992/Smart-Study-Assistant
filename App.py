@@ -14,9 +14,11 @@ class Document:
         return f"{self.title} {self.file_path} {self.ingestion_date}"
     
 class DocumentManager:
-    def __init__(self):
+    def __init__(self, storage_file="documents.json"):
+        self.storage_file = storage_file
         self.documents = []
-    def Add_document(self, file_path):
+        self._load_initial_documents()       
+    def add_document(self, file_path):
         if not os.path.exists(file_path):
             print("File not found!")
             return 
@@ -34,9 +36,9 @@ class DocumentManager:
             print('No documents is found')
         else:
             for doc in self.documents:
-                print(doc)
+                print(doc)  
     def save_to_json(self,file_name):
-        data = [doc.__dict__ for doc in self.documents]
+        # data = [doc.__dict__ for doc in self.documents]
 
         if os.path.exists(file_name):
             with open(file_name,"r") as f:
@@ -68,14 +70,3 @@ class DocumentManager:
         except Exception as e:
             print(f"Error loading json {e}")
 
-# manager = DocumentManager()
-# doc1 = Document("Test1", "Content 1", "file1.txt", datetime.now().isoformat())
-# doc2 = Document("Test2", "Content 2", "file2.txt", datetime.now().isoformat())
-# manager.documents.extend([doc1, doc2])
-# manager.save_to_json("documents.json")
-
-
-# print("\n--- Fresh Start ---")
-# new_manager = DocumentManager()
-# new_manager.load_from_json("documents.json")
-# new_manager.list_documents()
