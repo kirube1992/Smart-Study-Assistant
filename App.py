@@ -29,13 +29,11 @@ class DocumentManager:
                                 title=entry["title"],
                                 content=entry["Content"],
                                 file_path=entry["file_path"],
-                                ingestion_data=entry["ingestion_date"]
+                                ingestion_date=entry["ingestion_date"]
                             )
                             self.documents.append(doc)
                 print(f"Loaded {len(self.documents)} document(s) from {self.storage_file}.")
-            except json.JSONDecoderError:
-                print(f"Warning: {self.storage_file} is empty or malformed. Starting fresh.")
-                self.documents = []
+            except json.JSONDecodeError:
                 print(f"Warning: {self.storage_file} is empty or malformed. Starting fresh.")
                 self.documents = []
         else:
@@ -45,9 +43,10 @@ class DocumentManager:
             print('No documents is found')
         else:
             print("\n--- Current Documents ---")
-            for i,  doc in self.documents:
+            for i,  doc in enumerate(self.documents):
                 print(f"{i+1}.{doc}")
             print("-------------------------\n")
+    
     def save_to_json(self,file_name):
         # data = [doc.__dict__ for doc in self.documents]
 
