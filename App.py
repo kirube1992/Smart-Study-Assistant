@@ -47,17 +47,21 @@ class DocumentManager:
                 print(f"{i+1}.{doc}")
             print("-------------------------\n")
     
-    def save_to_json(self,file_name):
+    def save_to_json(self,file_name, append=False):
         # data = [doc.__dict__ for doc in self.documents]
 
-        if os.path.exists(file_name):
+        if append and os.path.exists(file_name):
             with open(file_name,"r") as f:
                 try:
                     data = json.load(f)
                 except json.JSONDecodeError:
                     data = []
-        for doc in self.documents:
-            data.append(doc.__dict__)
+            existing_path = {item.get("file_path") for item in data}
+            for doc in self.documents:
+                if doc.file_path not in existing_path:
+                   data.append(doc.__dict__)
+        else: 
+            data = [doc.__dict__ for doc in self.documents]
         with open(file_name,"w") as f:
             json.dump(data,f,indent=4)
         print(f"Saved {len(self.documents)} document(s) to {file_name}")
