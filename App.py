@@ -27,7 +27,7 @@ class DocumentManager:
                         if not any(doc.file_path == entry["file_path"] for doc in self.documents):
                             doc = Document(
                                 title=entry["title"],
-                                content=entry["Content"],
+                                content=entry["content"],
                                 file_path=entry["file_path"],
                                 ingestion_date=entry["ingestion_date"]
                             )
@@ -84,3 +84,25 @@ class DocumentManager:
         except Exception as e:
             print(f"Error loading json {e}")
 
+def _load_initial_documents(self):
+    """Private method to load documents on initialization."""
+    if os.path.exists(self.storage_file):
+        try:
+            with open(self.storage_file, "r") as f:
+                data = json.load(f)
+                for entry in data:
+                    # Handle both "Content" and "content" for backward compatibility
+                    content = entry.get("content") or entry.get("Content", "")
+                    
+                    doc = Document(
+                        title=entry.get("title", ""),
+                        content=content,
+                        file_path=entry.get("file_path", ""),
+                        ingestion_date=entry.get("ingestion_date", "")
+                    )
+                    self.documents.append(doc)
+            print(f"Loaded {len(self.documents)} document(s) from storage file.")
+        except json.JSONDecodeError:
+            print(f"Storage file '{self.storage_file}' is empty or corrupted.")
+    else:
+        print(f"No storage file found at '{self.storage_file}'. Starting fresh.")
