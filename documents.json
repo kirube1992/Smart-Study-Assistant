@@ -1,0 +1,14 @@
+[
+    {
+        "title": "Test Doc",
+        "content": "Hello world",
+        "file_path": "/path/test.txt",
+        "ingestion_date": "2025-12-12"
+    },
+    {
+        "title": "second",
+        "content": "some content",
+        "file_path": "file2.txt",
+        "ingestion_date": "2025-12-12 14:31:39.987733"
+    }
+]
