@@ -115,3 +115,6 @@ class DocumentManager:
                 print(f"Storage file '{self.storage_file}' is empty or corrupted.")
         else:
             print(f"No storage file found at '{self.storage_file}'. Starting fresh.")
+
+
+
