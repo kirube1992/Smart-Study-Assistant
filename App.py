@@ -16,6 +16,12 @@ class Document:
         text = re.sub(r'[^\w\s]', '', text_lower)
         self.tokens = text.split()
         return self.tokens
+    def tokens_to_numeric(self):
+        if not self.tokens:
+            self.preprocess_text()
+        
+        self.numeric_token = np.array([len(word) for word in self.tokens])
+        return self.numeric_token
 
     def __str__(self):
         return f"Document title: {self.title}, document filePath: {self.file_path}, date of ingestion: {self.ingestion_date}"
@@ -118,3 +124,16 @@ class DocumentManager:
 
 
 
+doc = Document(
+    title="AI Notes",
+    content="AI is changing the World!",
+    file_path="ai.txt",
+    ingestion_date="2025-12-15"
+)
+
+words = doc.preprocess_text()
+numbers = doc.tokens_to_numeric()
+
+print("Words:", words)
+print("Numeric:", numbers)
+print("Type:", type(numbers))
