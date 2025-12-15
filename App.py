@@ -1,6 +1,9 @@
 from datetime import datetime, date
 import json
 import os
+import numpy as np
+import re  
+
 
 class Document:
     def __init__(self,title,content,file_path,ingestion_date):
@@ -8,6 +11,12 @@ class Document:
         self.content = content
         self.file_path = file_path
         self.ingestion_date = ingestion_date
+    def preprocess_text(self):
+        text_lower = self.content.lower()
+        text = re.sub(r'[^\w\s]', '', text_lower)
+        self.tokens = text.split()
+        return self.tokens
+
     def __str__(self):
         return f"Document title: {self.title}, document filePath: {self.file_path}, date of ingestion: {self.ingestion_date}"
     def __repr__(self):
@@ -106,10 +115,3 @@ class DocumentManager:
                 print(f"Storage file '{self.storage_file}' is empty or corrupted.")
         else:
             print(f"No storage file found at '{self.storage_file}'. Starting fresh.")
-
-
-
-
-
-new_manager = DocumentManager("documents.json")
-new_manager.list_documents()
