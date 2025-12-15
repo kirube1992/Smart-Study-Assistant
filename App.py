@@ -1,7 +1,9 @@
 from datetime import datetime, date
+from collections import Counter
 import json
 import os
 import numpy as np
+import pandas as pd
 import re  
 
 
@@ -11,6 +13,7 @@ class Document:
         self.content = content
         self.file_path = file_path
         self.ingestion_date = ingestion_date
+        self.tokens = []
     def preprocess_text(self):
         text_lower = self.content.lower()
         text = re.sub(r'[^\w\s]', '', text_lower)
@@ -32,7 +35,32 @@ class DocumentManager:
     def __init__(self, storage_file="documents.json"):
         self.storage_file = storage_file
         self.documents = []
-        self._load_initial_documents()       
+        self._load_initial_documents()
+    def to_dataframe(self):
+        if not self.documents:
+            print('No documents avilabel')
+            return None
+        data = []
+        
+        for doc in self.documents:
+            tokens = doc.preprocess_text()
+
+            data.append({
+             "title": doc.title,
+             "file_path": doc.file_path,
+             "ingestion_date": doc.ingestion_date,
+             "word_count": len(tokens),
+             "content": doc.content
+            })
+
+        df = pd.DataFrame(data)
+        return df
+    def analytis_dashbord(self):
+        df = self.to_dataframe()
+        if df is None:
+            return
+        print(f'total documents:{len(df)}')
+        print(f'average word count:{df['word_count'].mean():.2f}')
     def add_document(self):
         if os.path.exists(self.storage_file):
             try:
@@ -124,16 +152,3 @@ class DocumentManager:
 
 
 
-doc = Document(
-    title="AI Notes",
-    content="AI is changing the World!",
-    file_path="ai.txt",
-    ingestion_date="2025-12-15"
-)
-
-words = doc.preprocess_text()
-numbers = doc.tokens_to_numeric()
-
-print("Words:", words)
-print("Numeric:", numbers)
-print("Type:", type(numbers))
