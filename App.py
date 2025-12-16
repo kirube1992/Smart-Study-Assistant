@@ -1,5 +1,7 @@
 from datetime import datetime, date
 from collections import Counter
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.linear_model import LogisticRegression
 import json
 import os
 import numpy as np
@@ -8,12 +10,13 @@ import re
 
 
 class Document:
-    def __init__(self,title,content,file_path,ingestion_date):
+    def __init__(self, title, content, file_path, ingestion_date, document_type):
         self.title = title
         self.content = content
         self.file_path = file_path
         self.ingestion_date = ingestion_date
         self.tokens = []
+        self.documetn_type = document_type
     def preprocess_text(self):
         text_lower = self.content.lower()
         text = re.sub(r'[^\w\s]', '', text_lower)
@@ -36,6 +39,31 @@ class DocumentManager:
         self.storage_file = storage_file
         self.documents = []
         self._load_initial_documents()
+    def train_document_classifier(self):
+        texts = []
+        labels = []
+        for doc in self.documents:
+            if doc.document_type is None:
+                continue
+            texts.append(doc.content)
+            labels.append(doc.document_type)
+        if len(set(labels)) < 2:
+            print("❌ Need at least two document types to train.")
+            return
+        self.vectorizer = CountVectorizer()
+        X = self.vectorizer.fit_transform(texts)
+
+        self.classifier = LogisticRegression(max_iter=1000)
+        self.classifier.fit(X, labels)
+
+        print("document classifier trained successfully")
+    def predict_document_type(self, content):
+        if not hasattr(self, "classifier"):
+            print("X Model not traind yet.")
+            return None
+        X = self.vectorizer.transform([content])
+        prediction = self.classifier.predict(X)
+        return prediction[0]
     def to_dataframe(self):
         if not self.documents:
             print('No documents avilabel')
@@ -63,6 +91,8 @@ class DocumentManager:
         print(f"average word count:{df['word_count'].mean():.2f}")
         all_words = []
         for document in self.documents:
+            if not document.tokens:
+                document.preprocess_text()
             all_words.extend(document.tokens)
         common_words = Counter(all_words).most_common(5)
         for word, count in common_words:
@@ -148,7 +178,8 @@ class DocumentManager:
                             title=entry.get("title", ""),
                             content=content,
                             file_path=entry.get("file_path", ""),
-                            ingestion_date=entry.get("ingestion_date", "")
+                            ingestion_date=entry.get("ingestion_date", ""),
+                            document_type=None
                         )
                         self.documents.append(doc)
                 print(f"Loaded {len(self.documents)} document(s) from storage file.")
@@ -158,3 +189,14 @@ class DocumentManager:
             print(f"No storage file found at '{self.storage_file}'. Starting fresh.")
 
 
+manager = DocumentManager("documents.json")
+
+manager.documents[0].document_type = "notes"
+manager.documents[1].document_type = "article"
+
+manager.train_document_classifier()
+# Test prediction
+test_text = "This lecture explains machine learning fundamentals"
+result = manager.predict_document_type(test_text)
+
+print("Predicted document type:", result)
