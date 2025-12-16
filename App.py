@@ -55,12 +55,19 @@ class DocumentManager:
 
         df = pd.DataFrame(data)
         return df
-    def analytis_dashbord(self):
+    def analytics_dashboard(self):
         df = self.to_dataframe()
         if df is None:
             return
         print(f'total documents:{len(df)}')
-        print(f'average word count:{df['word_count'].mean():.2f}')
+        print(f"average word count:{df['word_count'].mean():.2f}")
+        all_words = []
+        for document in self.documents:
+            all_words.extend(document.tokens)
+        common_words = Counter(all_words).most_common(5)
+        for word, count in common_words:
+            print(f"{word}:{count}")
+
     def add_document(self):
         if os.path.exists(self.storage_file):
             try:
@@ -149,6 +156,5 @@ class DocumentManager:
                 print(f"Storage file '{self.storage_file}' is empty or corrupted.")
         else:
             print(f"No storage file found at '{self.storage_file}'. Starting fresh.")
-
 
 
