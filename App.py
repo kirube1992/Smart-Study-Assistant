@@ -16,7 +16,9 @@ class Document:
         self.file_path = file_path
         self.ingestion_date = ingestion_date
         self.tokens = []
-        self.documetn_type = document_type
+        self.document_type = document_type
+        self.difficulty_score = 0
+        self.difficulty_label = None
     def preprocess_text(self):
         text_lower = self.content.lower()
         text = re.sub(r'[^\w\s]', '', text_lower)
@@ -28,6 +30,31 @@ class Document:
         
         self.numeric_token = np.array([len(word) for word in self.tokens])
         return self.numeric_token
+    def calculate_difficulty(self):
+        if not self.tokens:
+            self.preprocess_text()
+
+        word_count = len(self.tokens)
+        if word_count == 0:
+            self.difficulty_label = "easy"
+            return self.difficulty_label
+        
+        ave_word_length = sum(len(w) for w in self.tokens)/word_count
+        unique_ratio = len(set(self.tokens))/word_count
+
+        self.difficulty_score = (
+            ave_word_length * 0.5 + 
+            unique_ratio * 10 +
+            word_count * 0.01
+        )
+
+        if self.difficulty_score < 6:
+            self.difficulty_label = "easy"
+        elif self.difficulty_score <10:
+            self.difficulty_label = "medium"
+        else:
+            self.difficulty_label = "hard"
+        return self.difficulty_label
 
     def __str__(self):
         return f"Document title: {self.title}, document filePath: {self.file_path}, date of ingestion: {self.ingestion_date}"
@@ -64,6 +91,10 @@ class DocumentManager:
         X = self.vectorizer.transform([content])
         prediction = self.classifier.predict(X)
         return prediction[0]
+    def analyze_difficulty(self):
+        for doc in self.documents:
+            label = doc.calculate_difficulty()
+            print(f"{doc.title}: {label} (score={doc.difficulty_score:.2f})")
     def to_dataframe(self):
         if not self.documents:
             print('No documents avilabel')
@@ -98,7 +129,7 @@ class DocumentManager:
         for word, count in common_words:
             print(f"{word}:{count}")
 
-    def add_document(self):
+    def add_document(self,):
         if os.path.exists(self.storage_file):
             try:
                 with open(self.storage_file, "r") as f:
@@ -109,7 +140,8 @@ class DocumentManager:
                                 title=entry["title"],
                                 content=entry["content"],
                                 file_path=entry["file_path"],
-                                ingestion_date=entry["ingestion_date"]
+                                ingestion_date=entry["ingestion_date"],
+                                document_type=None
                             )
                             self.documents.append(doc)
                 print(f"Loaded {len(self.documents)} document(s) from {self.storage_file}.")
@@ -189,14 +221,16 @@ class DocumentManager:
             print(f"No storage file found at '{self.storage_file}'. Starting fresh.")
 
 
+# manager = DocumentManager("documents.json")
+
+# manager.documents[0].document_type = "notes"
+# manager.documents[1].document_type = "article"
+
+# manager.train_document_classifier()
+# # Test prediction
+# test_text = "This lecture explains machine learning fundamentals"
+# result = manager.predict_document_type(test_text)
+
+# print("Predicted document type:", result)
 manager = DocumentManager("documents.json")
-
-manager.documents[0].document_type = "notes"
-manager.documents[1].document_type = "article"
-
-manager.train_document_classifier()
-# Test prediction
-test_text = "This lecture explains machine learning fundamentals"
-result = manager.predict_document_type(test_text)
-
-print("Predicted document type:", result)
+manager.analyze_difficulty()
