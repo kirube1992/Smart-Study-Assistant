@@ -15,7 +15,7 @@ class Document:
         self.content = content
         self.file_path = file_path
         self.ingestion_date = ingestion_date
-        self.tokens = []
+        self.tokens = [] # need to understund 
         self.document_type = document_type
         self.difficulty_score = 0
         self.difficulty_label = None
@@ -27,7 +27,6 @@ class Document:
     def tokens_to_numeric(self):
         if not self.tokens:
             self.preprocess_text()
-        
         self.numeric_token = np.array([len(word) for word in self.tokens])
         return self.numeric_token
     def calculate_difficulty(self):
@@ -41,16 +40,18 @@ class Document:
         
         ave_word_length = sum(len(w) for w in self.tokens)/word_count
         unique_ratio = len(set(self.tokens))/word_count
+        long_word_ratio = len([w for w in self.tokens if len(w) > 6])/word_count
 
         self.difficulty_score = (
-            ave_word_length * 0.5 + 
-            unique_ratio * 10 +
+            ave_word_length * 0.4 + 
+            unique_ratio * 8 +
+            long_word_ratio * 15 +
             word_count * 0.01
         )
 
-        if self.difficulty_score < 6:
+        if self.difficulty_score < 8:
             self.difficulty_label = "easy"
-        elif self.difficulty_score <10:
+        elif self.difficulty_score <14:
             self.difficulty_label = "medium"
         else:
             self.difficulty_label = "hard"
@@ -82,7 +83,6 @@ class DocumentManager:
 
         self.classifier = LogisticRegression(max_iter=1000)
         self.classifier.fit(X, labels)
-
         print("document classifier trained successfully")
     def predict_document_type(self, content):
         if not hasattr(self, "classifier"):
