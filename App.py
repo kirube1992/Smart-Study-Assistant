@@ -6,7 +6,11 @@ import json
 import os
 import numpy as np
 import pandas as pd
-import re  
+import re
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 
 
 class Document:
@@ -19,6 +23,7 @@ class Document:
         self.document_type = document_type
         self.difficulty_score = 0
         self.difficulty_label = None
+        self.cluster_id = None
     def preprocess_text(self):
         text_lower = self.content.lower()
         text = re.sub(r'[^\w\s]', '', text_lower)
@@ -49,9 +54,9 @@ class Document:
             word_count * 0.01
         )
 
-        if self.difficulty_score < 8:
+        if self.difficulty_score < 3:
             self.difficulty_label = "easy"
-        elif self.difficulty_score <14:
+        elif self.difficulty_score < 11:
             self.difficulty_label = "medium"
         else:
             self.difficulty_label = "hard"
@@ -175,7 +180,34 @@ class DocumentManager:
         common_words = Counter(all_words).most_common(5)
         for word, count in common_words:
             print(f"{word}:{count}")
+    def vectorize_documents(self):
+        texts = [doc.content for doc in self.documents]
 
+        self.tfidf_vectorizer = TfidfVectorizer(
+            stop_words="english",
+            max_features=1000
+        )
+
+        self.tfidf_matrix = self.tfidf_vectorizer.fit_transform(texts)
+        print("Documents vetorized using TF-IDF")
+
+    def  cluster_documents(self, n_clusters=3):
+        self.kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+        cluster_labels = self.kmeans.fit_predict(self.tfidf_matrix)
+
+        for doc, label in zip(self.documents, cluster_labels):
+            doc.cluster_id = label
+
+        print(f" Document clutered into {n_clusters} topics")
+    def show_clusters(self):
+        clusters = {}
+
+        for doc in self.documents:
+            clusters.setdefault(doc.cluster_id, []).append(doc.title)
+        for cluster_id, titles in clusters.items():
+            print(f"Cluster {cluster_id}:")
+            for title in titles:
+                    print(f" -{title}")
     def add_document(self,):
         if os.path.exists(self.storage_file):
             try:
@@ -268,20 +300,7 @@ class DocumentManager:
             print(f"No storage file found at '{self.storage_file}'. Starting fresh.")
 
 
-# manager = DocumentManager("documents.json")
-
-# manager.documents[0].document_type = "notes"
-# manager.documents[1].document_type = "article"
-
-# manager.train_document_classifier()
-# # Test prediction
-# test_text = "This lecture explains machine learning fundamentals"
-# result = manager.predict_document_type(test_text)
-
-# print("Predicted document type:", result)
 manager = DocumentManager("documents.json")
-# manager.analyze_difficulty()
-manager.train_difficulty_classifier()
-
-test_text = "This introduction explains basic programming concepts."
-print("Predicted difficulty:", manager.predict_difficulty(test_text))
+manager.vectorize_documents()
+manager.cluster_documents(n_clusters=5)
+manager.show_clusters()
