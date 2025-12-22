@@ -56,7 +56,22 @@ class Document:
         else:
             self.difficulty_label = "hard"
         return self.difficulty_label
+    def extract_difficulty_features(self):
+        if not self.tokens:
+            self.preprocess_text()
+        word_count = len(self.tokens)
+        if word_count == 0:
+            return[0,0,0,0]
+        avg_word_length = sum(len(w) for w in self.tokens)/word_count
+        unique_ratio = len(set(self.tokens)) / word_count
+        long_word_ratio = len([w for w in self.tokens if len(w) >6]) /word_count
 
+        return [
+            word_count,
+            avg_word_length,
+            unique_ratio,
+            long_word_ratio
+        ]
     def __str__(self):
         return f"Document title: {self.title}, document filePath: {self.file_path}, date of ingestion: {self.ingestion_date}"
     def __repr__(self):
@@ -90,6 +105,38 @@ class DocumentManager:
             return None
         X = self.vectorizer.transform([content])
         prediction = self.classifier.predict(X)
+        return prediction[0]
+    def train_difficulty_classifier(self):
+        x = []
+        y = []
+
+        for doc in self.documents:
+            if doc.difficulty_label is None:
+                doc.calculate_difficulty()
+
+            x.append(doc.extract_difficulty_features())
+            y.append(doc.difficulty_label)
+            
+        if len(set(y)) < 2:
+            print("X not enough difficulty classes to train.")
+            return
+        
+        self.diff_classifier = LogisticRegression(max_iter = 1000)
+        self.diff_classifier.fit(x,y)
+
+        print(" Difficulty calssifer trained")
+    def predict_difficulty(self, content):
+        temp_doc = Document (
+            title = "temp",
+            content = content,
+            file_path="",
+            ingestion_date="",
+            document_type=None
+        )
+
+        features = [temp_doc.extract_difficulty_features()]
+        prediction = self.diff_classifier.predict(features)
+
         return prediction[0]
     def analyze_difficulty(self):
         for doc in self.documents:
@@ -233,4 +280,8 @@ class DocumentManager:
 
 # print("Predicted document type:", result)
 manager = DocumentManager("documents.json")
-manager.analyze_difficulty()
+# manager.analyze_difficulty()
+manager.train_difficulty_classifier()
+
+test_text = "This introduction explains basic programming concepts."
+print("Predicted difficulty:", manager.predict_difficulty(test_text))
