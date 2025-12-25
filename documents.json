@@ -1,74 +1,26 @@
 [
   {
-    "title": "Python Basics",
-    "content": "Python is a high-level programming language used for web development, data analysis, automation, and scripting. It emphasizes readability and simplicity.",
-    "file_path": "docs/python_basics.txt",
+    "title": "Machine Learning Basics",
+    "content": "Machine learning algorithms learn from data.",
+    "file_path": "ml1.txt",
     "ingestion_date": "2025-01-01"
   },
   {
-    "title": "Advanced Python",
-    "content": "Advanced Python covers decorators, generators, context managers, and performance optimization techniques for large-scale applications.",
-    "file_path": "docs/advanced_python.txt",
-    "ingestion_date": "2025-01-02"
+    "title": "Neural Networks",
+    "content": "Neural networks are used in deep learning.",
+    "file_path": "ml2.txt",
+    "ingestion_date": "2025-01-01"
   },
   {
-    "title": "Machine Learning Introduction",
-    "content": "Machine learning is a subset of artificial intelligence that enables systems to learn from data and improve performance without explicit programming.",
-    "file_path": "docs/ml_intro.txt",
-    "ingestion_date": "2025-01-03"
+    "title": "World History",
+    "content": "Ancient civilizations shaped human history.",
+    "file_path": "hist1.txt",
+    "ingestion_date": "2025-01-01"
   },
   {
-    "title": "Supervised Learning",
-    "content": "Supervised learning uses labeled datasets to train models for classification and regression tasks such as spam detection and price prediction.",
-    "file_path": "docs/supervised_learning.txt",
-    "ingestion_date": "2025-01-04"
-  },
-  {
-    "title": "Unsupervised Learning",
-    "content": "Unsupervised learning finds hidden patterns in unlabeled data using clustering and dimensionality reduction techniques.",
-    "file_path": "docs/unsupervised_learning.txt",
-    "ingestion_date": "2025-01-05"
-  },
-  {
-    "title": "K-Means Clustering",
-    "content": "K-Means is an unsupervised clustering algorithm that partitions data into K groups by minimizing distance to cluster centroids.",
-    "file_path": "docs/kmeans.txt",
-    "ingestion_date": "2025-01-06"
-  },
-  {
-    "title": "Data Structures",
-    "content": "Data structures like arrays, linked lists, stacks, queues, and trees are fundamental for efficient algorithm design.",
-    "file_path": "docs/data_structures.txt",
-    "ingestion_date": "2025-01-07"
-  },
-  {
-    "title": "Algorithms Basics",
-    "content": "Algorithms are step-by-step procedures for solving computational problems efficiently using logical operations and control flow.",
-    "file_path": "docs/algorithms.txt",
-    "ingestion_date": "2025-01-08"
-  },
-  {
-    "title": "Web Development Fundamentals",
-    "content": "Web development involves building websites using HTML, CSS, JavaScript, and backend technologies like APIs and databases.",
-    "file_path": "docs/web_dev.txt",
-    "ingestion_date": "2025-01-09"
-  },
-  {
-    "title": "Databases Introduction",
-    "content": "Databases store structured information using tables, indexes, and queries. SQL is commonly used for relational databases.",
-    "file_path": "docs/databases.txt",
-    "ingestion_date": "2025-01-10"
-  },
-  {
-    "title": "Linear Algebra for ML",
-    "content": "Linear algebra provides the mathematical foundation for machine learning, including vectors, matrices, dot products, and eigenvalues.",
-    "file_path": "docs/linear_algebra.txt",
-    "ingestion_date": "2025-01-11"
-  },
-  {
-    "title": "Probability and Statistics",
-    "content": "Probability and statistics help quantify uncertainty and analyze data distributions, variance, correlation, and hypothesis testing.",
-    "file_path": "docs/statistics.txt",
-    "ingestion_date": "2025-01-12"
+    "title": "Modern History",
+    "content": "Modern history includes world wars and revolutions.",
+    "file_path": "hist2.txt",
+    "ingestion_date": "2025-01-01"
   }
 ]

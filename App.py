@@ -217,11 +217,11 @@ class DocumentManager:
             print(f"Cluster {cluster_id}:")
             for title in titles:
                     print(f" -{title}")
-    def get_related_documetns(self, document_index):
-        if document_index >= len(self.document_index):
+    def get_related_documents(self, document_index):
+        if document_index >= len(self.documents):
             return []
         
-        target_cluster = self.documents >= len(self.documents):
+        target_cluster = self.documents[document_index].cluster_id
 
         related = [
             doc.title
@@ -231,6 +231,22 @@ class DocumentManager:
         ]
 
         return related
+    def visulize_cluster(self):
+        if not hasattr(self, "gfidf_matrix"):
+            print("vectorize document first")
+            return
+        pca = PCA(n_components=2)
+        reduced = pca.fit_transform(self.gfidf_matrix.toarray())
+
+        labels = [doc.cluster_id for doc in self.docu]
+        plt.figure(figsize=(8,6))
+        plt.scatter(reduced[:,0], reduced[:, 1], c=labels)
+
+        for i, doc in enumerate(self.documents):
+            plt.annotate(doc.title(reduced[i,0], reduced[i,1]))
+
+        plt.title("document topic cluster (PCA)")
+        plt.show()
     def add_document(self,):
         if os.path.exists(self.storage_file):
             try:
@@ -325,5 +341,8 @@ class DocumentManager:
 
 manager = DocumentManager("documents.json")
 manager.vectorize_documents()
-manager.cluster_documents(n_clusters=5)
+manager.cluster_documents(n_clusters=3)
 manager.show_clusters()
+
+
+print(manager.get_related_documents(0))
