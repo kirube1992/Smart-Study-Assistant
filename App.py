@@ -192,6 +192,15 @@ class DocumentManager:
         print("Documents vetorized using TF-IDF")
 
     def  cluster_documents(self, n_clusters=3):
+        doc_count = len(self.documents)
+
+        if doc_count < 2:
+            print(" Not enough documents to cluster")
+            return
+        if n_clusters > doc_count:
+            n_clusters = doc_count
+            print(f"Reduced cluster to{n_clusters}")
+
         self.kmeans = KMeans(n_clusters=n_clusters, random_state=42)
         cluster_labels = self.kmeans.fit_predict(self.tfidf_matrix)
 
