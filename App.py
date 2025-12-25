@@ -217,6 +217,20 @@ class DocumentManager:
             print(f"Cluster {cluster_id}:")
             for title in titles:
                     print(f" -{title}")
+    def get_related_documetns(self, document_index):
+        if document_index >= len(self.document_index):
+            return []
+        
+        target_cluster = self.documents >= len(self.documents):
+
+        related = [
+            doc.title
+            for doc in self.documents
+            if doc.cluster_id == target_cluster
+            and doc != self.documents[document_index]
+        ]
+
+        return related
     def add_document(self,):
         if os.path.exists(self.storage_file):
             try:
