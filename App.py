@@ -126,6 +126,8 @@ class DocumentManager:
 
         grid_search.fit(texts, labels)
 
+        self.doc_type_pipeline = grid_search.best_estimator_ 
+
         print("Best parpameters found")
         print(grid_search.best_params_)
         print(f"Besr cross-validation accuracy:{grid_search.best_score_:2f}")
