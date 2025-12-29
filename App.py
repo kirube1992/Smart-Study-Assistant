@@ -2,6 +2,8 @@ from datetime import datetime, date
 from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
 import json
 import os
 import numpy as np
@@ -98,19 +100,28 @@ class DocumentManager:
         if len(set(labels)) < 2:
             print("❌ Need at least two document types to train.")
             return
-        self.vectorizer = CountVectorizer()
-        X = self.vectorizer.fit_transform(texts)
+        X_train, X_test, Y_train, Y_test = train_test_split(
+            texts, labels, test_size=0.2, random_state=42
+        )
 
-        self.classifier = LogisticRegression(max_iter=1000)
-        self.classifier.fit(X, labels)
-        print("document classifier trained successfully")
+        self.doc_type_pipline = Pipeline([
+            ("tfidf", TfidfVectorizer(
+                stop_words="english",
+                max_features=2000
+            )),
+            ("clf", LogisticRegression(max_iter=1000))
+        ])
+
+        self.doc_type_pipline.fit(X_train, Y_train)
+
+        accuracy = self.doc_type_pipeline.score(X_test, Y_test)
+
+        print("document classifier trained successfully, {accuracy:.2f}")
     def predict_document_type(self, content):
         if not hasattr(self, "classifier"):
             print("X Model not traind yet.")
             return None
-        X = self.vectorizer.transform([content])
-        prediction = self.classifier.predict(X)
-        return prediction[0]
+        return self.doc_type_pipline.predict([content])[0]
     def train_difficulty_classifier(self):
         x = []
         y = []
@@ -345,4 +356,4 @@ manager.cluster_documents(n_clusters=3)
 manager.show_clusters()
 
 
-print(manager.get_related_documents(0))
+print(manager.get_related_documents(2))
