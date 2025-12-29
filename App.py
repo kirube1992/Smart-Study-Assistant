@@ -4,6 +4,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
 import json
 import os
 import numpy as np
@@ -100,11 +101,7 @@ class DocumentManager:
         if len(set(labels)) < 2:
             print("❌ Need at least two document types to train.")
             return
-        X_train, X_test, Y_train, Y_test = train_test_split(
-            texts, labels, test_size=0.2, random_state=42
-        )
-
-        self.doc_type_pipline = Pipeline([
+        pipeline = Pipeline([
             ("tfidf", TfidfVectorizer(
                 stop_words="english",
                 max_features=2000
@@ -112,16 +109,31 @@ class DocumentManager:
             ("clf", LogisticRegression(max_iter=1000))
         ])
 
-        self.doc_type_pipline.fit(X_train, Y_train)
+        param_grid = {
+            "tfidf__max_features": [500,1000,2000],
+            "tfidf__ngram_range":[(1,1),(1,2)],
+            "clf__C":[0.1,1,10]
+        }
 
-        accuracy = self.doc_type_pipeline.score(X_test, Y_test)
 
-        print("document classifier trained successfully, {accuracy:.2f}")
+        grid_search = GridSearchCV(
+            pipeline,
+            param_grid,
+            cv=2,
+            scoring="accuracy",
+            n_jobs=-1
+        )
+
+        grid_search.fit(texts, labels)
+
+        print("Best parpameters found")
+        print(grid_search.best_params_)
+        print(f"Besr cross-validation accuracy:{grid_search.best_score_:2f}")
     def predict_document_type(self, content):
-        if not hasattr(self, "classifier"):
+        if not hasattr(self, "doc_type_pipeline"):
             print("X Model not traind yet.")
             return None
-        return self.doc_type_pipline.predict([content])[0]
+        return self.doc_type_pipeline.predict([content])[0]
     def train_difficulty_classifier(self):
         x = []
         y = []
@@ -340,7 +352,7 @@ class DocumentManager:
                             content=content,
                             file_path=entry.get("file_path", ""),
                             ingestion_date=entry.get("ingestion_date", ""),
-                            document_type=None
+                            document_type=entry.get("document_type")
                         )
                         self.documents.append(doc)
                 print(f"Loaded {len(self.documents)} document(s) from storage file.")
@@ -350,10 +362,21 @@ class DocumentManager:
             print(f"No storage file found at '{self.storage_file}'. Starting fresh.")
 
 
-manager = DocumentManager("documents.json")
-manager.vectorize_documents()
-manager.cluster_documents(n_clusters=3)
-manager.show_clusters()
+if __name__ == "__main__":
+    manager = DocumentManager("documents.json")
 
+    print("\n--- WEEK 8: TRAIN DOCUMENT TYPE CLASSIFIER ---")
+    manager.train_document_classifier()
 
-print(manager.get_related_documents(2))
+    print("\n--- TEST DOCUMENT TYPE PREDICTION ---")
+    test_text = "These notes explain convolutional neural networks and optimization methods."
+    predicted_type = manager.predict_document_type(test_text)
+    print(f"Predicted document type: {predicted_type}")
+
+    print("\n--- WEEK 7: DOCUMENT CLUSTERING ---")
+    manager.vectorize_documents()
+    manager.cluster_documents(n_clusters=3)
+    manager.show_clusters()
+
+    print("\n--- RELATED DOCUMENTS ---")
+    print(manager.get_related_documents(2))

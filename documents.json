@@ -1,26 +1,44 @@
 [
   {
     "title": "Machine Learning Basics",
-    "content": "Machine learning algorithms learn from data.",
-    "file_path": "ml1.txt",
-    "ingestion_date": "2025-01-01"
+    "content": "This lecture introduces machine learning concepts including supervised learning, unsupervised learning, and basic model evaluation techniques.",
+    "file_path": "docs/ml_basics.txt",
+    "ingestion_date": "2024-11-01",
+    "document_type": "lecture"
   },
   {
-    "title": "Neural Networks",
-    "content": "Neural networks are used in deep learning.",
-    "file_path": "ml2.txt",
-    "ingestion_date": "2025-01-01"
+    "title": "Neural Networks Overview",
+    "content": "Neural networks are composed of layers of neurons. This article explains perceptrons, activation functions, and backpropagation.",
+    "file_path": "docs/neural_networks.txt",
+    "ingestion_date": "2024-11-02",
+    "document_type": "article"
   },
   {
-    "title": "World History",
-    "content": "Ancient civilizations shaped human history.",
-    "file_path": "hist1.txt",
-    "ingestion_date": "2025-01-01"
+    "title": "Deep Learning Notes",
+    "content": "These notes summarize deep learning topics such as convolutional neural networks, recurrent neural networks, and optimization strategies.",
+    "file_path": "docs/deep_learning_notes.txt",
+    "ingestion_date": "2024-11-03",
+    "document_type": "notes"
   },
   {
-    "title": "Modern History",
-    "content": "Modern history includes world wars and revolutions.",
-    "file_path": "hist2.txt",
-    "ingestion_date": "2025-01-01"
+    "title": "World History Introduction",
+    "content": "This lecture covers early civilizations, ancient empires, and the foundations of world history.",
+    "file_path": "docs/world_history.txt",
+    "ingestion_date": "2024-11-04",
+    "document_type": "lecture"
+  },
+  {
+    "title": "Modern History Article",
+    "content": "This article discusses industrialization, world wars, and major political changes in modern history.",
+    "file_path": "docs/modern_history.txt",
+    "ingestion_date": "2024-11-05",
+    "document_type": "article"
+  },
+  {
+    "title": "History Study Notes",
+    "content": "These notes focus on key dates, important events, and summaries useful for exam preparation in history.",
+    "file_path": "docs/history_notes.txt",
+    "ingestion_date": "2024-11-06",
+    "document_type": "notes"
   }
 ]
