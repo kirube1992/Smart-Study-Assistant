@@ -22,14 +22,27 @@ except ImportError:
     print(" gensim not installed run: pip install gensim")
     GENSIM_AVAILABLE = False
 
-class documentEmbedder:
+class DocumentEmbedder:
 
-    def __init__(self, model_name="glove_twitter-25"):
+    def __init__(self, model_name="glove-twitter-25"):
         self.model = None
         self.model_name = model_name
         self.vector_size =None
         self.loaded = False
+        self.load_falied = False
 
+
+        self.model_sizes = {
+            "glove-twitter-25": 25,
+            "glove-twitter-50": 50,
+            "glove-twitter-25": 100,
+            "glove-twitter-50": 200,
+            "word2vec-google-news-300": 300
+            }
+        if model_name in self.model_sizes:
+            self.vector_size = self.model_sizes[model_name]
+        else:
+            self.vector_size = 25
     def load_model(self):
         if not GENSIM_AVAILABLE:
             print(" Gensim not available. Install with: pip install gensim")
@@ -46,17 +59,25 @@ class documentEmbedder:
             except Exception as e:
                 print(f"Faild to load model: {e}")
                 return False
+        print("model already loaded")
+        return True
     def document_to_vector(self, text):
 
-        if not self.load_model():
-            return None
-        
+        if not self.loaded or self.model is None:
+            if not self.load_model():
+                print("Model not loaded. Using zero vector as fallback.")
+                if self.vector_size:
+                    return np.zeros(self.vector_size)
+                else:
+                    return np.zeros(25) 
+            
         words = str(text).lower().split()
         vectors = []
 
         for word in words:
             if word in self.model:
                 vectors.append(self.model[word])
+
         if not vectors:
             return np.zeros(self.vector_size)
         
@@ -311,12 +332,11 @@ class DocumentManager:
         ]
 
         return related
-    def init_embedder(self, model_name='glaove-twitter-25'):
+    def init_embedder(self, model_name='glove-twitter-25'):
         if not GENSIM_AVAILABLE:
             print("gensim not available. Install with: pip install gensim")
             return False
-        
-        self.embedder = documentEmbedder(model_name)
+        self.embedder = DocumentEmbedder(model_name)
         self.document_vectors = {}
         print("Document embedder initialized")
         return True
@@ -345,10 +365,14 @@ class DocumentManager:
         results.sort(key=lambda x:x[1], reverse=True)
 
         return results[:top_n]
-    def find_similar_by_content(self, content, top=3):
+    def find_similar_by_content(self, content, top_n=3):
         if not hasattr(self, 'embedder'):
             print("❌ Embedder not initialized. Call init_embedder() first")
             return []
+        if not hasattr(self, 'document_vectors'):
+            print("❌ No embeddings computed. Computing now...")
+            self.compute_all_embeddings()
+
         results = []
         query_vector = self.embedder.document_to_vector(content)
 
@@ -359,8 +383,8 @@ class DocumentManager:
             similarity = self._cosine_similarity(query_vector, vector)
             results.append((title, similarity))
 
-            results.sort(key=lambda x: x[1], reverse=True)
-            return results[:top_n]
+        results.sort(key=lambda x: x[1], reverse=True)
+        return results[:top_n]
         
     def _cosine_similarity(self, vec1, vec2):
         dot_product = np.dot(vec1, vec2)
@@ -371,21 +395,36 @@ class DocumentManager:
             return 0.0
         
         return dot_product/(norm1 * norm2)
-    def visulize_cluster(self):
-        if not hasattr(self, "gfidf_matrix"):
+    def visualize_cluster(self):
+        if not hasattr(self, "tfidf_matrix"):
             print("vectorize document first")
             return
         pca = PCA(n_components=2)
-        reduced = pca.fit_transform(self.gfidf_matrix.toarray())
+        reduced = pca.fit_transform(self.tfidf_matrix.toarray())
 
-        labels = [doc.cluster_id for doc in self.docu]
-        plt.figure(figsize=(8,6))
-        plt.scatter(reduced[:,0], reduced[:, 1], c=labels)
+        valid_docs = [doc for doc in self.documents if doc.cluster_id is not None]
+        valid_indices = [i for i, doc in enumerate(self.documents) if doc.cluster_id is not None]
+        
+        if not valid_docs:
+            print("No clusters found. Run cluster_documents() first.")
+            return
 
-        for i, doc in enumerate(self.documents):
-            plt.annotate(doc.title(reduced[i,0], reduced[i,1]))
+        labels = [doc.cluster_id for doc in valid_docs]
+        reduced_valid = reduced[valid_indices]
+        plt.figure(figsize=(10,8))
+        scatter = plt.scatter(reduced_valid[:, 0], reduced_valid[:, 1], 
+                             c=labels, cmap='tab20', alpha=0.7)
 
-        plt.title("document topic cluster (PCA)")
+        for i, doc in enumerate(valid_docs[:10]):  # Label first 10 only
+            plt.annotate(doc.title[:15] + "...", 
+                        (reduced_valid[i, 0], reduced_valid[i, 1]),
+                        fontsize=8, alpha=0.7)
+        
+        plt.colorbar(scatter, label='Cluster ID')
+        plt.title("Document Topic Clusters (PCA)")
+        plt.xlabel("PCA Component 1")
+        plt.ylabel("PCA Component 2")
+        plt.grid(True, alpha=0.3)
         plt.show()
     def add_document(self,):
         if os.path.exists(self.storage_file):
@@ -478,9 +517,8 @@ class DocumentManager:
         else:
             print(f"No storage file found at '{self.storage_file}'. Starting fresh.")
 
-
 if __name__ == "__main__":
-    manager = DocumentManager("documents.json") 
+    manager = DocumentManager("documents.json")
     
     print("\n" + "="*50)
     print("WEEK 9: DOCUMENT EMBEDDINGS & SEMANTIC SEARCH")
@@ -489,45 +527,46 @@ if __name__ == "__main__":
     # List all documents
     print("\n📚 Available Documents:")
     for i, doc in enumerate(manager.documents):
-        print(f"  {i+1}. {doc.title}")
+        print(f"  {i+1}. {doc.title} ({doc.document_type})")
     
     # Initialize embedder
     print("\n⚙️ Initializing embedder...")
-    if not manager.init_embedder():
-        print("Skipping embedding tests (gensim not available)")
+    if not manager.init_embedder('glove-twitter-25'):
+        print("\n⚠️ Could not initialize embedder.")
+        print("Try installing gensim: pip install gensim")
     else:
         # Compute embeddings
+        print("\n🔧 Computing document embeddings...")
         manager.compute_all_embeddings()
         
         # Test 1: Find similar documents
         print("\n🔍 Test 1: Finding similar documents")
         print("-" * 40)
         
-        # Let's find documents similar to "Machine Learning Basics"
-        similar = manager.find_similar_documents("Machine Learning Basics", top_n=2)
-        print(f"Documents similar to 'Machine Learning Basics':")
-        for title, similarity in similar:
-            print(f"  • {title} (similarity: {similarity:.3f})")
+        if manager.documents:
+            test_title = manager.documents[0].title  # Use first document as test
+            similar = manager.find_similar_documents(test_title, top_n=2)
+            print(f"Documents similar to '{test_title}':")
+            for title, similarity in similar:
+                print(f"  • {title} (similarity: {similarity:.3f})")
         
         # Test 2: Search by content
         print("\n🔍 Test 2: Search by content")
         print("-" * 40)
         
-        query = "artificial intelligence and neural networks"
+        query = "artificial intelligence"
         similar_by_content = manager.find_similar_by_content(query, top_n=2)
         print(f"Documents similar to query: '{query}'")
         for title, similarity in similar_by_content:
             print(f"  • {title} (similarity: {similarity:.3f})")
-        
-        # Test 3: Compare with TF-IDF clustering
-        print("\n🔍 Test 3: Compare with Week 7 TF-IDF clustering")
-        print("-" * 40)
-        
+    
+    # Always show TF-IDF clustering (works without gensim)
+    print("\n🔍 TF-IDF Clustering (from Week 7)")
+    print("-" * 40)
+    
+    if len(manager.documents) >= 2:
         manager.vectorize_documents()
-        manager.cluster_documents(n_clusters=2)
+        manager.cluster_documents(n_clusters=min(3, len(manager.documents)))
         manager.show_clusters()
-        
-        print("\n📊 Summary:")
-        print("  • TF-IDF clustering: Groups by word frequency")
-        print("  • Embedding similarity: Groups by semantic meaning")
-        print("  • Try: 'sales report' might cluster with 'marketing' (similar topics)")
+    
+    print("\n✅ Week 9 tasks completed!")
