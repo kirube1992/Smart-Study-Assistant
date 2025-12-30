@@ -311,6 +311,66 @@ class DocumentManager:
         ]
 
         return related
+    def init_embedder(self, model_name='glaove-twitter-25'):
+        if not GENSIM_AVAILABLE:
+            print("gensim not available. Install with: pip install gensim")
+            return False
+        
+        self.embedder = documentEmbedder(model_name)
+        self.document_vectors = {}
+        print("Document embedder initialized")
+        return True
+    def compute_all_embeddings(self):
+        if not hasattr(self,'embedder'):
+            print("Embedder not initialized. Call init_embedder() first")
+            return
+        for doc in self.documents:
+            vector = self.embedder.document_to_vector(doc.content)
+            self.document_vectors[doc.title] = vector
+        print(f" Computed embeddings for {len(self.document_vectors) } documents")
+    def find_similar_documents(self, query_doc_title, top_n=3):
+        if not hasattr(self, 'document_vectors'):
+            print("❌ No embeddings computed. Call compute_all_embeddings() first")
+            return []
+        if query_doc_title not in self.document_vectors:
+            print(f"❌ Document '{query_doc_title}' not found")
+            return []
+        query_vector = self.document_vectors[query_doc_title]
+        results = []
+        for title, vector in self.document_vectors.items():
+            if title == query_doc_title:
+                continue
+            similarity = self._cosine_similarity(query_vector, vector)
+            results.append((title, similarity))
+        results.sort(key=lambda x:x[1], reverse=True)
+
+        return results[:top_n]
+    def find_similar_by_content(self, content, top=3):
+        if not hasattr(self, 'embedder'):
+            print("❌ Embedder not initialized. Call init_embedder() first")
+            return []
+        results = []
+        query_vector = self.embedder.document_to_vector(content)
+
+        if query_vector is None:
+            return []
+        
+        for title, vector in self.document_vectors.items():
+            similarity = self._cosine_similarity(query_vector, vector)
+            results.append((title, similarity))
+
+            results.sort(key=lambda x: x[1], reverse=True)
+            return results[:top_n]
+        
+    def _cosine_similarity(self, vec1, vec2):
+        dot_product = np.dot(vec1, vec2)
+        norm1 = np.linalg.norm(vec1)
+        norm2 = np.linalg.norm(vec2)
+
+        if norm1 == 0 or norm2 == 0:
+            return 0.0
+        
+        return dot_product/(norm1 * norm2)
     def visulize_cluster(self):
         if not hasattr(self, "gfidf_matrix"):
             print("vectorize document first")
