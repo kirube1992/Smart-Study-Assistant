@@ -14,6 +14,61 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
+try:
+    import gensim.downloader as api
+    from sklearn.metrics.pairwise import cosine_similarity
+    GENSIM_AVAILABLE = True
+except ImportError:
+    print(" gensim not installed run: pip install gensim")
+    GENSIM_AVAILABLE = False
+
+class documentEmbedder:
+
+    def __init__(self, model_name="glove_twitter-25"):
+        self.model = None
+        self.model_name = model_name
+        self.vector_size =None
+        self.loaded = False
+
+    def load_model(self):
+        if not GENSIM_AVAILABLE:
+            print(" Gensim not available. Install with: pip install gensim")
+            return False
+        if self.model_name is None:
+            print(f"Loading {self.model_name}.. (first time may take 1-2 minutes)")
+
+            try:
+                self.model = api.load(self.model_name)
+                self.vector_size = self.model.vector_size
+                self.loaded = True
+                print(f"Loaded! Vocabulary: {len(self.model):,} words, Vector size: {self.vector_size}")
+                return True
+            except Exception as e:
+                print(f"Faild to load model: {e}")
+                return False
+    def document_to_vector(self, text):
+
+        if not self.load_model():
+            return None
+        
+        words = str(text).lower().split()
+        vectors = []
+
+        for word in words:
+            if word in self.model:
+                vectors.append(self.model[word])
+        if not vectors:
+            return np.zeros(self.vector_size)
+        
+        return np.mean(vectors, axis=0)
+    def get_word_vector(self, word):
+        if not self.load_model():
+            return None
+        
+        word = str(word).lower().strip()
+        if word in self.model:
+            return self.model[word]
+        return np.zeros(self.vector_size)
 
 
 class Document:
