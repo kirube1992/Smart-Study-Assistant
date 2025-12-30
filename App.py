@@ -34,7 +34,7 @@ class documentEmbedder:
         if not GENSIM_AVAILABLE:
             print(" Gensim not available. Install with: pip install gensim")
             return False
-        if self.model_name is None:
+        if self.model is None:
             print(f"Loading {self.model_name}.. (first time may take 1-2 minutes)")
 
             try:
@@ -480,20 +480,54 @@ class DocumentManager:
 
 
 if __name__ == "__main__":
-    manager = DocumentManager("documents.json")
-
-    print("\n--- WEEK 8: TRAIN DOCUMENT TYPE CLASSIFIER ---")
-    manager.train_document_classifier()
-
-    print("\n--- TEST DOCUMENT TYPE PREDICTION ---")
-    test_text = "These notes explain convolutional neural networks and optimization methods."
-    predicted_type = manager.predict_document_type(test_text)
-    print(f"Predicted document type: {predicted_type}")
-
-    print("\n--- WEEK 7: DOCUMENT CLUSTERING ---")
-    manager.vectorize_documents()
-    manager.cluster_documents(n_clusters=3)
-    manager.show_clusters()
-
-    print("\n--- RELATED DOCUMENTS ---")
-    print(manager.get_related_documents(2))
+    manager = DocumentManager("documents.json") 
+    
+    print("\n" + "="*50)
+    print("WEEK 9: DOCUMENT EMBEDDINGS & SEMANTIC SEARCH")
+    print("="*50)
+    
+    # List all documents
+    print("\n📚 Available Documents:")
+    for i, doc in enumerate(manager.documents):
+        print(f"  {i+1}. {doc.title}")
+    
+    # Initialize embedder
+    print("\n⚙️ Initializing embedder...")
+    if not manager.init_embedder():
+        print("Skipping embedding tests (gensim not available)")
+    else:
+        # Compute embeddings
+        manager.compute_all_embeddings()
+        
+        # Test 1: Find similar documents
+        print("\n🔍 Test 1: Finding similar documents")
+        print("-" * 40)
+        
+        # Let's find documents similar to "Machine Learning Basics"
+        similar = manager.find_similar_documents("Machine Learning Basics", top_n=2)
+        print(f"Documents similar to 'Machine Learning Basics':")
+        for title, similarity in similar:
+            print(f"  • {title} (similarity: {similarity:.3f})")
+        
+        # Test 2: Search by content
+        print("\n🔍 Test 2: Search by content")
+        print("-" * 40)
+        
+        query = "artificial intelligence and neural networks"
+        similar_by_content = manager.find_similar_by_content(query, top_n=2)
+        print(f"Documents similar to query: '{query}'")
+        for title, similarity in similar_by_content:
+            print(f"  • {title} (similarity: {similarity:.3f})")
+        
+        # Test 3: Compare with TF-IDF clustering
+        print("\n🔍 Test 3: Compare with Week 7 TF-IDF clustering")
+        print("-" * 40)
+        
+        manager.vectorize_documents()
+        manager.cluster_documents(n_clusters=2)
+        manager.show_clusters()
+        
+        print("\n📊 Summary:")
+        print("  • TF-IDF clustering: Groups by word frequency")
+        print("  • Embedding similarity: Groups by semantic meaning")
+        print("  • Try: 'sales report' might cluster with 'marketing' (similar topics)")
