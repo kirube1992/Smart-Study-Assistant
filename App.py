@@ -69,7 +69,7 @@ class DocumentEmbedder:
                 if self.vector_size:
                     return np.zeros(self.vector_size)
                 else:
-                    return np.zeros(25) 
+                    return np.zeros(25)
             
         words = str(text).lower().split()
         vectors = []
