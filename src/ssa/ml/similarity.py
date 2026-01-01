@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def find_similar_documents(self, query_doc_title, top_n=3):
         if not hasattr(self, 'document_vectors'):
             print("❌ No embeddings computed. Call compute_all_embeddings() first")

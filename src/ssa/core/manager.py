@@ -1,6 +1,7 @@
 from src.ssa.core.document import Document
 from src.ssa.core.embedder import DocumentEmbedder
 from src.ssa.ml.tfidf_engine import TfidfEngine
+from src.ssa.ml.features import extract_difficulty_features
 import numpy as np
 import pandas as pd
 from collections import Counter
@@ -15,7 +16,6 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import os
 import json
-
 class DocumentManager:
     def __init__(self, storage_file="documents.json"):
         self.storage_file = storage_file
@@ -38,7 +38,6 @@ class DocumentManager:
             ingestion_date="",
             document_type=None
         )
-
         features = [temp_doc.extract_difficulty_features()]
         prediction = self.diff_classifier.predict(features)
 
@@ -240,3 +239,15 @@ class DocumentManager:
                 print(f"Storage file '{self.storage_file}' is empty or corrupted.")
         else:
             print(f"No storage file found at '{self.storage_file}'. Starting fresh.")
+
+    def prepare_difficlulty_training_data(self):
+        X = []
+        Y = []
+
+        for doc in self.documents:
+            if doc.difficulty_label is None:
+                doc.calculate_difficulty()
+
+            X.append(extract_difficulty_features(doc))
+            Y.append(doc.difficulty_label)
+        return X, Y

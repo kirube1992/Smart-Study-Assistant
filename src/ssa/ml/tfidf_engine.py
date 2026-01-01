@@ -8,7 +8,7 @@ class  TfidfEngine:
         max_features=100
          )
         self.tfidf_matrix = None
-    def vectorize(self, documents):
+    def vectorize(self, documents): 
             texts = [doc.content for doc in documents]
 
             if not texts:
@@ -51,4 +51,3 @@ class  TfidfEngine:
                 print(f"Cluster {cluster_id}:")
                 for title in titles:
                         print(f" -{title}")
-    print("🔥 USING NEW TFIDF ENGINE 🔥")
