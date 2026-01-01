@@ -2,6 +2,7 @@ from src.ssa.core.document import Document
 from src.ssa.core.embedder import DocumentEmbedder
 from src.ssa.ml.tfidf_engine import TfidfEngine
 from src.ssa.ml.features import extract_difficulty_features
+from src.ssa.ml.difficulty_classifier import Difficulty_classifier
 import numpy as np
 import pandas as pd
 from collections import Counter
@@ -243,11 +244,41 @@ class DocumentManager:
     def prepare_difficlulty_training_data(self):
         X = []
         Y = []
-
-        for doc in self.documents:
-            if doc.difficulty_label is None:
-                doc.calculate_difficulty()
+        for i, doc in enumerate(self.documents):
+            # TEMPORARY manual labels for learning
+            if i == 0:
+                doc.difficulty_label = "easy"
+            elif i == 1:
+                doc.difficulty_label = "medium"
+            else:
+                doc.difficulty_label = "hard"
 
             X.append(extract_difficulty_features(doc))
             Y.append(doc.difficulty_label)
         return X, Y
+    def train_difficulty_model(self):
+        from src.ssa.ml.difficulty_classifier import Difficulty_classifier
+        X, y = self.prepare_difficlulty_training_data()
+
+        if len(set(y)) < 2:
+            raise ValueError("Need at least 2 difficulty classes to train")
+
+        self.difficulty_model = Difficulty_classifier()
+        self.difficulty_model.train(X, y)
+
+    print("✅ Difficulty model trained successfully")
+    def predict_difficulty_ml(self, content):
+        from src.ssa.core.document import Document
+        from src.ssa.ml.features import extract_difficulty_features
+
+
+        temp_doc = Document(
+            title="temp",
+            content=content,
+            file_path="",
+            ingestion_date="",
+            document_type=None
+        )
+
+        features = [extract_difficulty_features(temp_doc)]
+        return self.difficulty_model.predict(features)
