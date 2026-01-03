@@ -1,33 +1,42 @@
-"""
-Test the basic Q&A structure.
-"""
+from src.ssa.core.manager import DocumentManager
+from src.ssa.qa.retriever import QARetriever
+from src.ssa.qa.answer_extractor import AnswerExtractor
 
-import sys
-import os
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+def run_week_11_test():
+    print("\n=== WEEK 11: SIMPLE Q&A TEST ===\n")
 
-# Test imports
-try:
-    from ssa.qa.retriever import QARetriever
-    from ssa.qa.answer_extractor import AnswerExtractor
-    print("✅ Successfully imported QARetriever and AnswerExtractor!")
-    
-    # Test class instantiation
-    retriever = QARetriever(None)
+    # 1️⃣ Load documents
+    manager = DocumentManager("data/documents.json")
+
+    # 2️⃣ Ensure embeddings exist
+    manager.init_embedder()
+    manager.compute_all_embeddings()
+
+    # 3️⃣ Initialize QA components
+    retriever = QARetriever(manager)
     extractor = AnswerExtractor()
-    print("✅ Successfully created instances!")
-    
-    # Test some methods
-    test_text = "Machine learning is artificial intelligence. It helps computers learn."
-    sentences = extractor.split_into_sentences(test_text)
-    print(f"✅ Sentence splitting works: {len(sentences)} sentences found")
-    
-    keywords = extractor.extract_keywords(test_text, top_n=5)
-    print(f"✅ Keyword extraction works: {keywords}")
-    
-except ImportError as e:
-    print(f"❌ Import error: {e}")
-except Exception as e:
-    print(f"❌ Other error: {e}")
+
+    # 4️⃣ Ask a question
+    question = "What is machine learning?"
+
+    print(f"Question: {question}\n")
+
+    # 5️⃣ Retrieve top documents
+    retrieved = retriever.retrieve_for_question(question, top_k=3)
+    documents = retriever.get_retrieved_documents(retrieved)
+
+    print("Retrieved documents:")
+    for doc, score in documents:
+        print(f"- {doc.title} (score={score:.2f})")
+
+    # 6️⃣ Extract answers
+    answers = extractor.extract_answers(question, documents)
+
+    print("\nAnswers:")
+    print(extractor.format_answers(answers))
+
+
+if __name__ == "__main__":
+    run_week_11_test()
+

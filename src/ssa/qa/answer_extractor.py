@@ -67,3 +67,16 @@ class AnswerExtractor:
 
         all_answers.sort(key=lambda x: x[1], reverse=True)
         return all_answers[:max_answers]
+    def format_answers(self, answers: List[Tuple[str, float, str]]) -> str:
+        if not answers:
+            return "I couldn't find a clear answer in your study materials."
+
+        formatted = []
+        for i, (answer, score, source) in enumerate(answers, 1):
+            confidence = "" if score > 0.5 else "~"
+            formatted.append(
+                f"{i}. {answer}\n   Source: {source} {confidence}"
+            )
+
+        return "\n\n".join(formatted)
+
