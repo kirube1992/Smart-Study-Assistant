@@ -1,5 +1,3 @@
-from src.ssa.core.document import Document
-
 try:
     import gensim.downloader as api
     from sklearn.metrics.pairwise import cosine_similarity

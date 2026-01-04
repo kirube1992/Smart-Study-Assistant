@@ -61,7 +61,7 @@ class DocumentManager:
             print('No documents avilabel')
             return None
         data = []
-        
+    
         for doc in self.documents:
             tokens = doc.preprocess_text()
 
