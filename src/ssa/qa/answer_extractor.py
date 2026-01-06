@@ -50,8 +50,9 @@ class AnswerExtractor:
         question: str,
         documents: List[Tuple],
         max_answers: int = 3,
-        min_score: float = 0.2
-    ) -> List[Tuple[str, float, str]]:
+        min_score: float = 0.2,
+        explain: bool = False
+        ):
 
         all_answers = []
 
@@ -63,10 +64,20 @@ class AnswerExtractor:
                 combined = s_score * (0.5 + 0.5 * doc_score)
 
                 if combined >= min_score:
-                    all_answers.append((sentence, combined, doc.title))
+                    if explain:
+                        all_answers.append(
+                            self.explain_sentence(question, sentence, doc_score)
+                            | {"soruce:doc.title"}
+                        )
+                    else:
+                        all_answers.append((sentence,combined,doc.title))
+        all_answers.sort(
+            key=lambda x: x["combined_score"] if explain else x[1],
+            reverse=True
+        )
 
-        all_answers.sort(key=lambda x: x[1], reverse=True)
         return all_answers[:max_answers]
+        
     def format_answers(self, answers: List[Tuple[str, float, str]]) -> str:
         if not answers:
             return "I couldn't find a clear answer in your study materials."
@@ -79,4 +90,24 @@ class AnswerExtractor:
             )
 
         return "\n\n".join(formatted)
+    def explain_sentence(
+            self,
+            question:str,
+            sentence:str,
+            doc_score:float
+    ) ->dict:
+        keywords = self.extract_keywords(question)
+        sentence_lower = sentence.lower()
 
+        matched = [kw for kw in keywords if kw in sentence_lower]
+        sentence_score = self.score_sentence_relevance(question, sentence)
+
+        combined_score = self.score_sentence_relevance(question, sentence)
+
+        return {
+            "sentence":sentence,
+            "matched_keywords":matched,
+            "sentence_score":round(sentence_score,3),
+            "document_score":round(doc_score,3),
+            "combined_score": round(combined_score,3),
+        }

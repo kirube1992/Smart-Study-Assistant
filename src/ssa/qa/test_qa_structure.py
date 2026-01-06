@@ -18,7 +18,7 @@ def run_week_11_test():
     extractor = AnswerExtractor()
 
     # 4️⃣ Ask a question
-    question = "What is machine learning?"
+    question = "What is Machine learning"
 
     print(f"Question: {question}\n")
 
