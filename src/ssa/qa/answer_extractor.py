@@ -4,9 +4,12 @@ from collections import Counter
 
 
 class AnswerExtractor:
-    def __init__(self, min_sentence_length: int = 10, max_sentence_length: int = 200):
+    def __init__(self,embedder, min_sentence_length: int = 10, max_sentence_length: int = 200):
         self.min_sentence_length = min_sentence_length
         self.max_sentence_length = max_sentence_length
+        self.embedder = embedder
+    def embed_sentences(self, sentences):
+        return self.embedder.embed_batch(sentences)
 
     def split_into_sentences(self, text: str) -> List[str]:
         sentences = re.split(r'(?<=[.!?])\s+', text)
@@ -34,50 +37,49 @@ class AnswerExtractor:
         counts = Counter(filtered)
         return [w for w, _ in counts.most_common(top_n)]
 
-    def score_sentence_relevance(self, question: str, sentence: str) -> float:
-        q_keywords = self.extract_keywords(question)
-
-        if not q_keywords:
-            return 0.0
-
-        sentence_lower = sentence.lower()
-        matches = sum(1 for kw in q_keywords if kw in sentence_lower)
-
-        return matches / len(q_keywords)
+    def score_sentence_relevance(self, question_embedding, sentence_embedding):
+        return self.embedder.similarity(
+            question_embedding,
+            sentence_embedding
+        )
+        
 
     def extract_answers(
         self,
-        question: str,
-        documents: List[Tuple],
-        max_answers: int = 3,
-        min_score: float = 0.2,
-        explain: bool = False
+        question,
+        documents,
+        max_answers= 3,
+        min_score = 0.3,
         ):
 
         all_answers = []
 
+        question_embedding = self.embedder.embed_batch([question])[0]
+
+
         for doc, doc_score in documents:
             sentences = self.split_into_sentences(doc.content)
+            if not sentences:
+                continue
 
-            for sentence in sentences:
-                s_score = self.score_sentence_relevance(question, sentence)
-                combined = s_score * (0.5 + 0.5 * doc_score)
+            sentence_embeddings = self.embedder.embed_batch(sentences)
 
+
+
+            for sentence, sent_emb in zip(sentences, sentence_embeddings):
+                sim = self.score_sentence_relevance(
+                    question_embedding,
+                    sent_emb)
+
+                combined = sim * (0.5 + 0.5 * doc_score)
+                
                 if combined >= min_score:
-                    if explain:
-                        all_answers.append(
-                            self.explain_sentence(question, sentence, doc_score)
-                            | {"soruce:doc.title"}
-                        )
-                    else:
-                        all_answers.append((sentence,combined,doc.title))
-        all_answers.sort(
-            key=lambda x: x["combined_score"] if explain else x[1],
-            reverse=True
-        )
-
+                    all_answers.append(
+                    (sentence, combined,doc.title)
+                    )
+        # sort and return top answers after processing all documents
+        all_answers.sort(key=lambda x: x[1], reverse=True)
         return all_answers[:max_answers]
-        
     def format_answers(self, answers: List[Tuple[str, float, str]]) -> str:
         if not answers:
             return "I couldn't find a clear answer in your study materials."

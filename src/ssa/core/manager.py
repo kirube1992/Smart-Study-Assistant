@@ -110,7 +110,7 @@ class DocumentManager:
                self.embedder = TransformerEmbedder(
                    model_name or "all-MiniLM-L6-v2"
                )
-               print("Transfromer embedder inialized")
+               print("Transfromer embedder initilaized")
                self.document_vectors = {}
                return True
            except Exception as e:

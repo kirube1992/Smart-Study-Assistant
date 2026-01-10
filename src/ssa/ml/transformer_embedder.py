@@ -6,11 +6,37 @@ class TransformerEmbedder:
     
     def __init__(self, model_name="all-MiniLM-L6-v2"):
         
-        self.model = SentenceTransformer(model_name)
         self.model_name = model_name
-        self.vector_size = self.model.get_sentence_embedding_dimension()
-        self.vector_size = self.model_dims.get(model_name, 384)
-
+        self.model = None
+        self.vector_size = None
+        self.loaded = False
+    def load_model(self):
+        try:
+            self.model = SentenceTransformer(self.model_name)
+            # model provides embedding dimension
+            try:
+                self.vector_size = self.model.get_sentence_embedding_dimension()
+            except Exception:
+                # fallback to common size
+                self.vector_size = 384
+            self.loaded = True
+            return True
+        except Exception as e:
+            print(f"Failed to load transformer model '{self.model_name}': {e}")
+            self.loaded = False
+            # ensure vector_size is defined to avoid errors elsewhere
+            if self.vector_size is None:
+                self.vector_size = 0
+            return False
+    def document_to_vector(self, text: str) -> np.ndarray:
+        if not self.loaded:
+            if not self.load_model():
+                return np.zeros(self.vector_size)
+            
+        if not text or len(text.strip()) < 3:
+            return np.zeros(self.vector_size)
+        embedding = self.model.encode(text, convert_to_numpy=True)
+        return embedding
     def encode(self, text: str) -> np.ndarray:
         if not text or len(text.strip()) < 3:
             return np.zeros(self.vector_size)

@@ -10,12 +10,15 @@ def run_week_11_test():
     manager = DocumentManager("data/documents.json")
 
     # 2️⃣ Ensure embeddings exist
-    manager.init_embedder()
-    manager.compute_all_embeddings()
+    manager.init_embedder(embedder_type="transformer")
+
 
     # 3️⃣ Initialize QA components
     retriever = QARetriever(manager)
-    extractor = AnswerExtractor()
+    # pass the manager's embedder into the extractor so it can compute embeddings
+    extractor = AnswerExtractor(manager.embedder)
+
+
 
     # 4️⃣ Ask a question
     question = "What is Machine learning"
