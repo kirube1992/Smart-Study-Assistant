@@ -2,7 +2,6 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from numpy.linalg import norm
 
-
 class TransformerEmbedder:
     
     def __init__(self, model_name="all-MiniLM-L6-v2"):
@@ -25,3 +24,4 @@ class TransformerEmbedder:
             return 0.0
         
         return float(np.dot(v1,v2))/(norm(v1) * norm(v2))
+

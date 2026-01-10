@@ -3,6 +3,7 @@ from src.ssa.core.embedder import DocumentEmbedder
 from src.ssa.ml.tfidf_engine import TfidfEngine
 from src.ssa.ml.features import extract_difficulty_features
 from src.ssa.ml.difficulty_classifier import Difficulty_classifier
+from src.ssa.ml.transformer_embedder import TransformerEmbedder
 import numpy as np
 import pandas as pd
 from collections import Counter
@@ -101,16 +102,35 @@ class DocumentManager:
             if doc.cluster_id == target_cluster
             and doc != self.documents[document_index]
         ]
-
         return related
-    def init_embedder(self, model_name='glove-twitter-25'):
-        if not GENSIM_AVAILABLE:
-            print("gensim not available. Install with: pip install gensim")
-            return False
-        self.embedder = DocumentEmbedder(model_name)
-        self.document_vectors = {}
-        print("Document embedder initialized")
-        return True
+    def init_embedder(self, model_name=None, embedder_type="transformer"):
+        if embedder_type == "transformer":
+           try:
+               from src.ssa.ml.transformer_embedder import TransformerEmbedder
+               self.embedder = TransformerEmbedder(
+                   model_name or "all-MiniLM-L6-v2"
+               )
+               print("Transfromer embedder inialized")
+               self.document_vectors = {}
+               return True
+           except Exception as e:
+               print(f"failed to initialize trasformer embedder: {e}")
+               return False
+        elif embedder_type == "glove":
+            if not GENSIM_AVAILABLE:
+                print("gensim not available. Install with: pip install gensim")
+                return False    
+
+            from src.ssa.core.embedder import DocumentEmbedder
+            self.embedder = DocumentEmbedder(
+                model_name or "glove-twitter-25"
+            )
+            print("GloVe embedder initialized")
+            self.document_vectors = {}
+            return True
+
+        else:
+            raise ValueError(f"Unknown embedder type: {embedder_type}")
     def compute_all_embeddings(self):
         if not hasattr(self,'embedder'):
             print("Embedder not initialized. Call init_embedder() first")
