@@ -1,6 +1,7 @@
 from src.ssa.core.document import Document
 from src.ssa.core.embedder import DocumentEmbedder
 from src.ssa.ml.tfidf_engine import TfidfEngine
+from src.ssa.ml.sumrize import DocumentSummarzer
 from src.ssa.ml.features import extract_difficulty_features
 from src.ssa.ml.difficulty_classifier import Difficulty_classifier
 from src.ssa.ml.transformer_embedder import TransformerEmbedder
@@ -32,6 +33,23 @@ class DocumentManager:
             print("X Model not traind yet.")
             return None
         return self.doc_type_pipeline.predict([content])[0]
+    def add_summarizer(self):
+        try:
+            self.add_summarizer =  DocumentSummarzer()
+            return True
+        except:
+            print("Install trasformers: pip install transformers")
+            return False
+    def get_summary(self, doc_index: int) -> str:
+        if not hasattr(self, 'summarizer'):
+            return "summarizer not avilable"
+        
+        if 0 <= doc_index < len(self.documents):
+            doc = self.documents[doc_index]
+            summary = self.summarizer.summarize_document(doc)
+            return summary or  "could not generate summary"
+        
+        return "Invalid document index"
     def predict_difficulty(self, content):
         temp_doc = Document (
             title = "temp",
