@@ -39,19 +39,19 @@ class DocumentSummarizer:
                 text,
                 max_length=min(self.max_length, word_count // 2),
                 min_length=min(self.min_length, word_count // 3),
-                do_sample=False,      # FIXED: do_sample not do_simple
+                do_sample=False,    
                 truncation=True
             )
             return result[0]["summary_text"]
         else:
-            result = self.pipeline(    # FIXED: pipeline not pipleine
+            result = self.pipeline(   
                 text,
                 max_length=self.max_length,
                 min_length=self.min_length,
                 do_sample=False, 
-                truncation=True        # FIXED: truncation not trucation
+                truncation=True        
             )
-            return result[0]["summary_text"]  # FIXED: summary_text not summary-text
+            return result[0]["summary_text"]  
     
     def summarize_document(self, document) -> Optional[str]:
         if hasattr(document, 'content'):

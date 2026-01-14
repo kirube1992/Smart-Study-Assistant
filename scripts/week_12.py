@@ -1,5 +1,5 @@
 # test_simple_summarizer.py
-from src.ssa.ml.sumrize import DocumentSummarizer
+from ssa.ml.summarizer import DocumentSummarizer
 
 # test_summarizer_comprehensive.py
 
