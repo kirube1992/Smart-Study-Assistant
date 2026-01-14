@@ -1,13 +1,15 @@
 from src.ssa.core.document import Document
 from src.ssa.core.embedder import DocumentEmbedder
 from src.ssa.ml.tfidf_engine import TfidfEngine
-from ssa.ml.summarizer import DocumentSummarizer
+from typing import List, Dict, Optional, Any
+from src.ssa.ml.semantic_summarizer import SemanticSummarizer  
 from src.ssa.ml.features import extract_difficulty_features
 from src.ssa.ml.difficulty_classifier import Difficulty_classifier
 from src.ssa.ml.transformer_embedder import TransformerEmbedder
 import numpy as np
 import pandas as pd
 from collections import Counter
+from datetime import datetime
 try:
     import gensim.downloader as api
     from sklearn.metrics.pairwise import cosine_similarity
@@ -35,21 +37,20 @@ class DocumentManager:
         return self.doc_type_pipeline.predict([content])[0]
     def add_summarizer(self):
         try:
-            self.add_summarizer =  DocumentSummarzer()
+            from src.ssa.ml.summarizer import DocumentSummarizer 
             return True
         except:
             print("Install trasformers: pip install transformers")
             return False
-    def get_summary(self, doc_index: int) -> str:
-        if not hasattr(self, 'summarizer'):
-            return "summarizer not avilable"
-        
+    def get_summary(self, doc_index: int, use_semantic: bool = True) -> str:
         if 0 <= doc_index < len(self.documents):
             doc = self.documents[doc_index]
-            summary = self.summarizer.summarize_document(doc)
-            return summary or  "could not generate summary"
-        
-        return "Invalid document index"
+            if use_semantic and hasattr(self, 'semantic_summarizer'):
+                summary_data = self.semantic_summarizer.summarize_document(doc)
+                return summary_data["summary"] if summary_data else "could not generate semantic summary"
+            else:
+                return "Summarizer not avilable"
+        return "invalid document index"
     def predict_difficulty(self, content):
         temp_doc = Document (
             title = "temp",
@@ -128,7 +129,7 @@ class DocumentManager:
                self.embedder = TransformerEmbedder(
                    model_name or "all-MiniLM-L6-v2"
                )
-               print("Transfromer embedder initilaized")
+               print("Transformer embedder initialized")
                self.document_vectors = {}
                return True
            except Exception as e:
@@ -320,3 +321,204 @@ class DocumentManager:
 
         features = [extract_difficulty_features(temp_doc)]
         return self.difficulty_model.predict(features)
+    
+    def init_week12_features(self):
+        print("🚀 Initializing Week 12 Features...")
+
+        success = self.init_embedder(
+            model_name="all-MiniLM-L6-v2",
+            embedder_type="transformer"
+        )
+
+        if not success:
+            print("Failed to initialize transformer embedder")
+            return False
+        
+        print("Creating semantic embeddings.")
+        self.compute_all_embeddings()
+
+
+        try:
+            from src.ssa.ml.semantic_summarizer import SemanticSummarizer
+            self.semantic_summarizer = SemanticSummarizer(self.embedder)
+            print("Semantic summarizer initialized")
+        except Exception as e:
+            print(f"Failed to initialize semantic summarizer: {e}")
+            return 
+        print("🎉 Week 12 features initialized successfully!")
+        return True  # ✅ Make sure this returns True!
+        
+    def semantic_search(self, query: str, top_k: int = 5,threshold: float = 0.3):
+        if not hasattr(self,'embedder') or not hasattr(self,'document_vectors'):
+            print("Semantic search not initialized. call init_week12_feature() first.")
+            return []
+        
+        query_vector = self.embedder.encode(query)
+
+        results = []
+        for title, doc_vector in self.document_vectors.items():
+
+            doc = next((d for d in self.documents if d.title == title), None)
+            if not doc:
+                continue
+
+            similarity = self.embedder.similarity(query_vector, doc_vector)
+
+            if similarity >= threshold:
+                results.append({
+                    "document":doc,
+                    "title":doc.title,
+                    "similarity": similarity,
+                    "content_preview": doc.content[:200] + "..." if len(doc.content) > 200 else doc.content
+                })
+
+        results.sort(key=lambda x: x["similarity"], reverse=True)
+
+        return results[:top_k]
+            
+    def answer_question(self, question: str, use_semantic_summary: bool = True) -> Dict:
+        # Step 1: Semantic search
+        search_results = self.semantic_search(question, top_k=3, threshold=0.25)
+        
+        if not search_results:
+            return {
+                "question": question,
+                "answer": "I couldn't find relevant information in your study materials.",
+                "sources": [],
+                "method": "semantic_search"
+            }
+        
+        # Step 2: Generate summaries
+        answer_parts = []
+        sources = []
+        
+        for result in search_results:
+            doc = result["document"]
+            
+            if use_semantic_summary and hasattr(self, 'semantic_summarizer'):
+                # Use semantic summarizer focused on the question
+                summary_data = self.semantic_summarizer.summarize_document(
+                    doc, 
+                    focus_query=question
+                )
+                summary = summary_data["summary"]
+                summary_type = "semantic"
+            elif hasattr(self, 'abstractive_summarizer') and self.abstractive_summarizer:
+                # Use abstractive summarizer
+                summary = self.abstractive_summarizer.summarize_document(doc)
+                summary_type = "abstractive"
+            else:
+                # Fallback to content preview
+                summary = result["content_preview"]
+                summary_type = "preview"
+            
+            answer_parts.append(f"**{doc.title}** (relevance: {result['similarity']:.2f}):\n{summary}")
+            
+            sources.append({
+                "title": doc.title,
+                "similarity": result["similarity"],
+                "summary_type": summary_type,
+                "content_length": len(doc.content)
+            })
+        
+        # Step 3: Combine into final answer
+        answer = "\n\n".join(answer_parts)
+        
+        return {
+            "question": question,
+            "answer": answer,
+            "sources": sources,
+            "total_documents": len(self.documents),
+            "relevant_documents": len(search_results),
+            "method": "semantic_search_with_summarization"
+        }
+    
+    def create_semantic_study_guide(self, topic: str, num_documents: int = 5) -> Dict:
+        """
+        Create a semantic study guide on a specific topic.
+        
+        Args:
+            topic: Topic to create guide about
+            num_documents: Number of documents to include
+            
+        Returns:
+            Study guide with summaries
+        """
+        # Find relevant documents semantically
+        search_results = self.semantic_search(topic, top_k=num_documents, threshold=0.2)
+        
+        guide = {
+            "topic": topic,
+            "created_at": datetime.now().isoformat(),
+            "documents": []
+        }
+        
+        for result in search_results:
+            doc = result["document"]
+            
+            # Get semantic summary focused on the topic
+            if hasattr(self, 'semantic_summarizer'):
+                summary_data = self.semantic_summarizer.summarize_document(doc, focus_query=topic)
+                summary = summary_data["summary"]
+                compression = summary_data["compression_ratio"]
+            else:
+                summary = doc.content[:300] + "..." if len(doc.content) > 300 else doc.content
+                compression = 1.0
+            
+            # Extract key points (first few sentences of summary)
+            sentences = self.semantic_summarizer._split_into_sentences(summary)
+            key_points = sentences[:min(3, len(sentences))]
+            
+            guide["documents"].append({
+                "title": doc.title,
+                "relevance_score": result["similarity"],
+                "summary": summary,
+                "key_points": key_points,
+                "compression_ratio": compression,
+                "original_length": len(doc.content.split()),
+                "summary_length": len(summary.split())
+            })
+        
+        return guide
+    
+    def compare_search_methods(self, query: str):
+        """
+        Compare keyword-based (Week 11) vs semantic search (Week 12)
+        
+        Args:
+            query: Search query to compare
+        """
+        print(f"\n🔍 Comparing Search Methods for: '{query}'")
+        print("=" * 60)
+        
+        # Week 11: Keyword-based search (using your existing AnswerExtractor)
+        print("\n📝 Week 11 - Keyword-based Search:")
+        print("-" * 40)
+        
+        try:
+            from src.ssa.qa.answer_extractor import AnswerExtractor
+            extractor = AnswerExtractor()
+            
+            # Mock documents for comparison
+            mock_docs = [(doc, 1.0) for doc in self.documents]
+            keyword_results = extractor.extract_answers(query, mock_docs, max_answers=3)
+            
+            for i, (answer, score, source) in enumerate(keyword_results[:3], 1):
+                print(f"{i}. Score: {score:.3f}")
+                print(f"   Source: {source}")
+                print(f"   Answer: {answer[:100]}...")
+        except Exception as e:
+            print(f"   Keyword search not available: {e}")
+        
+        # Week 12: Semantic search
+        print("\n🤖 Week 12 - Semantic Search:")
+        print("-" * 40)
+        
+        semantic_results = self.semantic_search(query, top_k=3)
+        
+        for i, result in enumerate(semantic_results, 1):
+            print(f"{i}. Score: {result['similarity']:.3f}")
+            print(f"   Source: {result['title']}")
+            print(f"   Preview: {result['content_preview'][:100]}...")
+        
+        print("\n" + "=" * 60)

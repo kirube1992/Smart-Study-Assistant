@@ -1,0 +1,36 @@
+{
+  "topic": "Artificial Intelligence",
+  "created": "2024-01-01",
+  "documents": [
+    {
+      "title": "Machine Learning Fundamentals",
+      "relevance_score": 0.49396735429763794,
+      "summary": "Machine learning is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed. There are three main types of machine learning: supervised learning, unsupervised learning, and reinforcement learning. Reinforcement learning uses rewards and penalties to guide learning.",
+      "key_sentences": [
+        "Machine learning is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed.",
+        "Reinforcement learning uses rewards and penalties to guide learning.",
+        "Unsupervised learning finds patterns in unlabeled data."
+      ]
+    },
+    {
+      "title": "Neural Networks Overview",
+      "relevance_score": 0.4488663375377655,
+      "summary": "Artificial neural networks are computing systems inspired by biological neural networks. Deep learning uses neural networks with many layers to learn complex patterns. Common architectures include convolutional neural networks for image processing and recurrent neural networks for sequential data like text or time series.",
+      "key_sentences": [
+        "Artificial neural networks are computing systems inspired by biological neural networks.",
+        "They consist of layers of interconnected nodes called neurons.",
+        "Each neuron processes signals using an activation function."
+      ]
+    },
+    {
+      "title": "Natural Language Processing Basics",
+      "relevance_score": 0.4242287278175354,
+      "summary": "Natural Language Processing (NLP) is a subfield of artificial intelligence that focuses on the interaction between computers and human language. It enables computers to understand, interpret, and generate human language. Applications include machine translation, sentiment analysis, and chatbots.",
+      "key_sentences": [
+        "Natural Language Processing (NLP) is a subfield of artificial intelligence that focuses on the interaction between computers and human language.",
+        "It enables computers to understand, interpret, and generate human language.",
+        "Applications include machine translation, sentiment analysis, and chatbots."
+      ]
+    }
+  ]
+}
