@@ -35,22 +35,6 @@ class DocumentManager:
             print("X Model not traind yet.")
             return None
         return self.doc_type_pipeline.predict([content])[0]
-    def add_summarizer(self):
-        try:
-            from src.ssa.ml.summarizer import DocumentSummarizer 
-            return True
-        except:
-            print("Install trasformers: pip install transformers")
-            return False
-    def get_summary(self, doc_index: int, use_semantic: bool = True) -> str:
-        if 0 <= doc_index < len(self.documents):
-            doc = self.documents[doc_index]
-            if use_semantic and hasattr(self, 'semantic_summarizer'):
-                summary_data = self.semantic_summarizer.summarize_document(doc)
-                return summary_data["summary"] if summary_data else "could not generate semantic summary"
-            else:
-                return "Summarizer not avilable"
-        return "invalid document index"
     def predict_difficulty(self, content):
         temp_doc = Document (
             title = "temp",
@@ -150,6 +134,22 @@ class DocumentManager:
 
         else:
             raise ValueError(f"Unknown embedder type: {embedder_type}")
+    def add_summarizer(self):
+        try:
+            from src.ssa.ml.summarizer import DocumentSummarizer 
+            return True
+        except:
+            print("Install trasformers: pip install transformers")
+            return False
+    def get_summary(self, doc_index: int, use_semantic: bool = True) -> str:
+        if 0 <= doc_index < len(self.documents):
+            doc = self.documents[doc_index]
+            if use_semantic and hasattr(self, 'semantic_summarizer'):
+                summary_data = self.semantic_summarizer.summarize_document(doc)
+                return summary_data["summary"] if summary_data else "could not generate semantic summary"
+            else:
+                return "Summarizer not avilable"
+        return "invalid document index"
     def compute_all_embeddings(self):
         if not hasattr(self,'embedder'):
             print("Embedder not initialized. Call init_embedder() first")
