@@ -7,13 +7,12 @@ class TransformerEmbedder:
     def __init__(self, model_name="all-MiniLM-L6-v2"):
         
         self.model_name = model_name
-        self.model = None
+        self.model = None 
         self.vector_size = None
         self.loaded = False
     def load_model(self):
         try:
             self.model = SentenceTransformer(self.model_name)
-            # model provides embedding dimension
             try:
                 self.vector_size = self.model.get_sentence_embedding_dimension()
             except Exception:
@@ -50,4 +49,3 @@ class TransformerEmbedder:
             return 0.0
         
         return float(np.dot(v1,v2))/(norm(v1) * norm(v2))
-

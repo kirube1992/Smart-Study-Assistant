@@ -69,7 +69,7 @@ def week12_final_demo():
     print(f"✅ Loaded {len(manager.documents)} documents")
     
     # Initialize Week 12 features
-    print("\n🚀 Initializing Week 12 features...")
+    # print("\n🚀 Initializing Week 12 features...")
     if not manager.init_week12_features():
         print("❌ Failed to initialize Week 12 features")
         return

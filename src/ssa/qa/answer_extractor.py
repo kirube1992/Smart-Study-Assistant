@@ -113,4 +113,3 @@ class AnswerExtractor:
             "document_score":round(doc_score,3),
             "combined_score": round(combined_score,3),
         }
-
