@@ -352,16 +352,13 @@ class DocumentManager:
         if not hasattr(self,'embedder') or not hasattr(self,'document_vectors'):
             print("Semantic search not initialized. call init_week12_feature() first.")
             return []
-        
         query_vector = self.embedder.encode(query)
-
         results = []
         for title, doc_vector in self.document_vectors.items():
 
             doc = next((d for d in self.documents if d.title == title), None)
             if not doc:
                 continue
-
             similarity = self.embedder.similarity(query_vector, doc_vector)
 
             if similarity >= threshold:
