@@ -520,31 +520,41 @@ class DocumentManager:
             print(f"   Preview: {result['content_preview'][:100]}...")
         
         print("\n" + "=" * 60)
-    def init_flan_t5(self, model_size: str = "base"):
+    def init_llm_feature(self, model_size: str = "small"):
         """
-        Initialize Flan-T5 for Week 13 (simpler than full LLM init)
+        Initialize Flan-T5 LLM for Week 13
         """
-        print("🚀 Initializing Flan-T5 LLM...")
+        print(f"🚀 Initializing Week 13 LLM Features (Flan-T5-{model_size})...")
+        
+        # First, ensure Week 12 features are initialized
+        if not hasattr(self, 'embedder') or not hasattr(self, 'document_vectors'):
+            self.init_week12_feature()
         
         try:
-            # Import and create client
-            from ..ml.llm_client import FlanT5Client
+            from ..ml.flan_t5_client import FlanT5Client
             from ..ml.prompt_engineer import PromptEngineer
             
+            # Initialize Flan-T5 client
             self.llm_client = FlanT5Client(model_size=model_size)
+            
+            # Initialize prompt engineer
             self.prompt_engineer = PromptEngineer()
             
             print(f"✅ Flan-T5-{model_size} initialized successfully!")
-            print(f"   Model runs on: {'CPU (default)'}")
-            print(f"   Estimated memory: ~{250 if model_size == 'base' else 80} MB")
+            print(f"   Running on: CPU")
+            print(f"   Model size: ~{308 if model_size == 'small' else 800}MB")
             
-            # Test the model
+            # Quick test
             test_response = self.llm_client.generate("Hello, are you working?", max_length=50)
-            print(f"   Test response: {test_response[:50]}...")
+            print(f"   Test: {test_response[:50]}...")
+            
+            return True
             
         except ImportError as e:
-            print(f"❌ Missing dependencies: {e}")
-            print("   Run: pip install transformers torch")
+            print(f"❌ Error: {e}")
+            print("   Make sure transformers is installed: pip install transformers")
+            return False
         except Exception as e:
-            print(f"❌ Error initializing Flan-T5: {e}")
-            self.llm_client = None
+            print(f"❌ Error initializing LLM: {e}")
+            return False
+            
