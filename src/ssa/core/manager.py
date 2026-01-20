@@ -6,6 +6,7 @@ from src.ssa.ml.semantic_summarizer import SemanticSummarizer
 from src.ssa.ml.features import extract_difficulty_features
 from src.ssa.ml.difficulty_classifier import Difficulty_classifier
 from src.ssa.ml.transformer_embedder import TransformerEmbedder
+from src.ssa.ml.flan_t5_client import FlanT5Client
 import numpy as np
 import pandas as pd
 from collections import Counter
@@ -519,3 +520,31 @@ class DocumentManager:
             print(f"   Preview: {result['content_preview'][:100]}...")
         
         print("\n" + "=" * 60)
+    def init_flan_t5(self, model_size: str = "base"):
+        """
+        Initialize Flan-T5 for Week 13 (simpler than full LLM init)
+        """
+        print("🚀 Initializing Flan-T5 LLM...")
+        
+        try:
+            # Import and create client
+            from ..ml.flan_t5_client import FlanT5Client
+            from ..ml.prompt_engineer import PromptEngineer
+            
+            self.llm_client = FlanT5Client(model_size=model_size)
+            self.prompt_engineer = PromptEngineer()
+            
+            print(f"✅ Flan-T5-{model_size} initialized successfully!")
+            print(f"   Model runs on: {'CPU (default)'}")
+            print(f"   Estimated memory: ~{250 if model_size == 'base' else 80} MB")
+            
+            # Test the model
+            test_response = self.llm_client.generate("Hello, are you working?", max_length=50)
+            print(f"   Test response: {test_response[:50]}...")
+            
+        except ImportError as e:
+            print(f"❌ Missing dependencies: {e}")
+            print("   Run: pip install transformers torch")
+        except Exception as e:
+            print(f"❌ Error initializing Flan-T5: {e}")
+            self.llm_client = None
