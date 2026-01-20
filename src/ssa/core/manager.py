@@ -6,7 +6,7 @@ from src.ssa.ml.semantic_summarizer import SemanticSummarizer
 from src.ssa.ml.features import extract_difficulty_features
 from src.ssa.ml.difficulty_classifier import Difficulty_classifier
 from src.ssa.ml.transformer_embedder import TransformerEmbedder
-from src.ssa.ml.flan_t5_client import FlanT5Client
+from ssa.ml.llm_client import FlanT5Client
 import numpy as np
 import pandas as pd
 from collections import Counter
@@ -528,7 +528,7 @@ class DocumentManager:
         
         try:
             # Import and create client
-            from ..ml.flan_t5_client import FlanT5Client
+            from ..ml.llm_client import FlanT5Client
             from ..ml.prompt_engineer import PromptEngineer
             
             self.llm_client = FlanT5Client(model_size=model_size)
