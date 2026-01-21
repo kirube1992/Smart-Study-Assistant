@@ -523,6 +523,9 @@ class DocumentManager:
             print(f"   Preview: {result['content_preview'][:100]}...")
         
         print("\n" + "=" * 60)
+
+
+        
     def init_llm(self):
         """Initialize LLM (minimal version)"""
         try:
