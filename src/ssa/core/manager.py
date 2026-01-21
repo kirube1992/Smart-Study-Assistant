@@ -6,7 +6,10 @@ from src.ssa.ml.semantic_summarizer import SemanticSummarizer
 from src.ssa.ml.features import extract_difficulty_features
 from src.ssa.ml.difficulty_classifier import Difficulty_classifier
 from src.ssa.ml.transformer_embedder import TransformerEmbedder
-from ssa.ml.llm_client import FlanT5Client
+from src.ssa.ml.simple_llm import SimpleLLM
+
+from ..ml.flan_t5_client import FlanT5Client
+from ..ml.prompt_engineer import PromptEngineer
 import numpy as np
 import pandas as pd
 from collections import Counter
@@ -520,41 +523,221 @@ class DocumentManager:
             print(f"   Preview: {result['content_preview'][:100]}...")
         
         print("\n" + "=" * 60)
-    def init_llm_feature(self, model_size: str = "small"):
-        """
-        Initialize Flan-T5 LLM for Week 13
-        """
-        print(f"🚀 Initializing Week 13 LLM Features (Flan-T5-{model_size})...")
-        
-        # First, ensure Week 12 features are initialized
-        if not hasattr(self, 'embedder') or not hasattr(self, 'document_vectors'):
-            self.init_week12_feature()
-        
+    def init_llm(self):
+        """Initialize LLM (minimal version)"""
         try:
             from ..ml.flan_t5_client import FlanT5Client
             from ..ml.prompt_engineer import PromptEngineer
             
-            # Initialize Flan-T5 client
-            self.llm_client = FlanT5Client(model_size=model_size)
-            
-            # Initialize prompt engineer
-            self.prompt_engineer = PromptEngineer()
-            
-            print(f"✅ Flan-T5-{model_size} initialized successfully!")
-            print(f"   Running on: CPU")
-            print(f"   Model size: ~{308 if model_size == 'small' else 800}MB")
-            
-            # Quick test
-            test_response = self.llm_client.generate("Hello, are you working?", max_length=50)
-            print(f"   Test: {test_response[:50]}...")
-            
+            self.llm = FlanT5Client("small")
+            self.prompt_eng = PromptEngineer()
+            print("✅ LLM initialized")
             return True
-            
         except ImportError as e:
             print(f"❌ Error: {e}")
-            print("   Make sure transformers is installed: pip install transformers")
             return False
-        except Exception as e:
-            print(f"❌ Error initializing LLM: {e}")
-            return False
+
+    def answer_with_llm(self, question):
+        """Simple LLM Q&A"""
+        if not hasattr(self, 'llm'):
+            return "LLM not initialized"
+        
+        # Get relevant documents
+        results = self.semantic_search(question, top_k=2, threshold=0.2)
+        
+        if results:
+            # Format context
+            context = self.prompt_eng.format_context(results)
+            prompt = self.prompt_eng.build_rag_prompt(context, question)
             
+            # Generate answer
+            answer = self.llm.generate(prompt, max_length=200)
+            
+            return {
+                "question": question,
+                "answer": answer,
+                "sources": [{"title": r["title"], "score": r["similarity"]} for r in results]
+            }
+        else:
+            return {
+                "question": question,
+                "answer": "No relevant documents found.",
+                "sources": []
+            }
+    def init_week13(self):
+        """Week 13: Initialize DistilGPT2 LLM"""
+        print("\n🚀 Week 13: Initializing DistilGPT2 LLM...")
+        
+        try:
+            from transformers import pipeline
+            self.gpt2 = pipeline("text-generation", model="distilgpt2")
+            print("✅ DistilGPT2 LLM ready!")
+            print("   Model: distilgpt2 (82M parameters)")
+            print("   Status: Fast & reliable")
+            return True
+        except Exception as e:
+            print(f"❌ LLM error: {e}")
+            return False
+    
+    def ask_gpt2(self, question):
+        """Week 13: Simple Q&A with DistilGPT2"""
+        if not hasattr(self, 'gpt2'):
+            if not self.init_week13():
+                return {
+                    "question": question,
+                    "answer": "LLM not available",
+                    "error": True
+                }
+        
+        # Generate answer
+        result = self.gpt2(
+            f"Question: {question}\nAnswer:",
+            max_new_tokens=100,
+            temperature=0.8,
+            do_sample=True,
+            top_p=0.9,
+            repetition_penalty=1.2,
+            truncation=True
+        )
+        
+        answer = result[0]['generated_text']
+        # Extract answer part
+        if "Answer:" in answer:
+            answer = answer.split("Answer:")[-1].strip()
+        elif "Question:" in answer:
+            answer = answer.replace(f"Question: {question}", "").strip()
+        
+        return {
+            "question": question,
+            "answer": answer,
+            "model": "DistilGPT2",
+            "week": 13
+        }
+    
+    def ask_llm(self, question, use_context=False):
+        """Week 13: Enhanced LLM Q&A with optional context"""
+        if not hasattr(self, 'gpt2'):
+            if not self.init_week13():
+                return {
+                    "question": question,
+                    "answer": "LLM not available",
+                    "error": True
+                }
+        
+        # If use_context is True, incorporate document context
+        if use_context and hasattr(self, 'documents') and self.documents:
+            # Get relevant documents using semantic search
+            search_results = self.semantic_search(question, top_k=2, threshold=0.2)
+            
+            if search_results:
+                # Build context from documents
+                context_parts = []
+                for result in search_results:
+                    doc = result["document"]
+                    summary = doc.content[:150] + "..." if len(doc.content) > 150 else doc.content
+                    context_parts.append(f"Document: {doc.title}\nContent: {summary}\nRelevance: {result['similarity']:.2f}")
+                
+                context = "\n\n".join(context_parts)
+                prompt = f"Context from study materials:\n{context}\n\nQuestion: {question}\nAnswer based on the context:"
+            else:
+                prompt = f"Question: {question}\nAnswer:"
+        else:
+            # Just use the question without context
+            prompt = f"Question: {question}\nAnswer:"
+        
+        # Generate answer
+        result = self.gpt2(
+            prompt,
+            max_new_tokens=150,  # Slightly longer for context
+            temperature=0.7,
+            do_sample=True,
+            top_p=0.9,
+            repetition_penalty=1.2,
+            truncation=True
+        )
+        
+        answer = result[0]['generated_text']
+        
+        # Extract answer part
+        if "Answer based on the context:" in answer:
+            answer = answer.split("Answer based on the context:")[-1].strip()
+        elif "Answer:" in answer:
+            answer = answer.split("Answer:")[-1].strip()
+        elif "Question:" in answer:
+            answer = answer.replace(f"Question: {question}", "").strip()
+        
+        return {
+            "question": question,
+            "answer": answer,
+            "model": "DistilGPT2",
+            "context_used": use_context,
+            "week": 13
+        }
+    
+    # Optional: Add a method for Week 14-style RAG (more advanced)
+    def rag_answer(self, question):
+        """Week 14 style: RAG with document retrieval"""
+        # Step 1: Get relevant documents
+        search_results = self.semantic_search(question, top_k=3, threshold=0.2)
+        
+        if not search_results:
+            return self.ask_llm(question, use_context=False)
+        
+        # Step 2: Build RAG prompt
+        context_parts = []
+        sources = []
+        
+        for i, result in enumerate(search_results):
+            doc = result["document"]
+            # Use summarizer if available
+            if hasattr(self, 'semantic_summarizer'):
+                summary_data = self.semantic_summarizer.summarize_document(doc, focus_query=question)
+                summary = summary_data["summary"]
+            else:
+                summary = doc.content[:200] + "..." if len(doc.content) > 200 else doc.content
+            
+            context_parts.append(f"[Source {i+1}] {doc.title}:\n{summary}")
+            sources.append({
+                "title": doc.title,
+                "similarity": result["similarity"]
+            })
+        
+        context = "\n\n".join(context_parts)
+        
+        # Step 3: Create RAG prompt
+        rag_prompt = f"""Based on the following study materials, answer the question.
+
+            Study Materials:
+            {context}
+
+            Question: {question}
+
+            Please provide a clear, concise answer based on the materials above. If the information isn't in the materials, say so.
+
+            Answer:"""
+        
+        # Step 4: Generate answer
+        if not hasattr(self, 'gpt2'):
+            self.init_week13()
+        
+        result = self.gpt2(
+            rag_prompt,
+            max_new_tokens=200,
+            temperature=0.5,  # Lower temperature for factual answers
+            do_sample=True,
+            top_p=0.85,
+            repetition_penalty=1.1
+        )
+        
+        answer = result[0]['generated_text']
+        if "Answer:" in answer:
+            answer = answer.split("Answer:")[-1].strip()
+        
+        return {
+            "question": question,
+            "answer": answer,
+            "sources": sources,
+            "context_used": True,
+            "method": "RAG",
+            "week": "13-14 hybrid"
+        }

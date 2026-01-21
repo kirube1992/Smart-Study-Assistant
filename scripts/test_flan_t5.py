@@ -1,52 +1,69 @@
-#!/usr/bin/env python3
-"""
-Quick test script for Flan-T5
-"""
-
+# scripts/week13_integration_test.py
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-print("🧪 Testing Flan-T5 Installation...")
-print("=" * 50)
+print("🎓 WEEK 13 INTEGRATION TEST")
+print("=" * 60)
 
+# Test 1: Direct DistilGPT2 with better parameters
+print("\n1. Testing DistilGPT2 (improved)...")
+from transformers import pipeline
+
+generator = pipeline("text-generation", model="distilgpt2")
+
+test_result = generator(
+    "Question: What is artificial intelligence?\nAnswer:",
+    max_new_tokens=80,
+    temperature=0.8,
+    repetition_penalty=1.2,
+    truncation=True
+)
+
+answer = test_result[0]['generated_text']
+if "Answer:" in answer:
+    answer = answer.split("Answer:")[-1].strip()
+
+print(f"🤖 {answer}")
+print("✅ DistilGPT2 works with better parameters!")
+
+# Test 2: Test your manager
+print("\n2. Testing DocumentManager integration...")
 try:
-    # Test 1: Import transformers
-    print("1. Testing transformers import...")
-    from transformers import pipeline
-    print("   ✅ transformers imported")
+    from src.ssa.core.manager import DocumentManager
     
-    # Test 2: Load small model
-    print("\n2. Loading Flan-T5-small (fastest)...")
-    generator = pipeline("text2text-generation", model="google/flan-t5-small")
-    print("   ✅ Model loaded")
+    manager = DocumentManager()
     
-    # Test 3: Generate response
-    print("\n3. Testing generation...")
-    result = generator("What is AI?", max_length=50)
-    print(f"   Prompt: What is AI?")
-    print(f"   Response: {result[0]['generated_text']}")
-    
-    # Test 4: Memory info
-    print("\n4. System check...")
-    import psutil
-    memory = psutil.virtual_memory()
-    print(f"   Available RAM: {memory.available / 1024**3:.1f} GB")
-    print(f"   Used RAM: {memory.used / 1024**3:.1f} GB")
-    
-    print("\n" + "=" * 50)
-    print("✅ ALL TESTS PASSED!")
-    print("=" * 50)
-    print("\n🎉 Flan-T5 is ready for Smart Study Assistant!")
-    print("\nNext: Run 'python scripts/test_llm_qa.py' to test integration")
-    
-except ImportError as e:
-    print(f"❌ Import error: {e}")
-    print("\n💡 Solution: pip install transformers torch")
-    
+    # Check if method exists
+    if hasattr(manager, 'init_week13'):
+        print("✅ init_week13 method exists")
+        
+        # Initialize
+        success = manager.init_week13()
+        if success and hasattr(manager, 'ask_gpt2'):
+            print("✅ LLM initialized")
+            
+            # Test Q&A
+            result = manager.ask_gpt2("What is machine learning?")
+            print(f"🤖 Answer: {result['answer'][:100]}...")
+            print(f"📊 Model: {result.get('model', 'unknown')}")
+            print(f"📅 Week: {result.get('week', 'unknown')}")
+            
+            print("\n✅ WEEK 13 INTEGRATION SUCCESSFUL!")
+        else:
+            print("❌ LLM initialization failed")
+    else:
+        print("❌ init_week13 method not found in manager")
+        print("💡 Add the methods shown above to your manager.py")
+        
 except Exception as e:
     print(f"❌ Error: {e}")
-    print("\n💡 Try these fixes:")
-    print("1. Update pip: python -m pip install --upgrade pip")
-    print("2. Install with: pip install transformers torch --no-cache-dir")
-    print("3. If memory error, use smaller model: flan-t5-small")
+    import traceback
+    traceback.print_exc()
+
+print("\n" + "=" * 60)
+print("🎯 NEXT STEPS:")
+print("1. Add init_week13() and ask_gpt2() methods to manager.py")
+print("2. Run this test again")
+print("3. Week 13 is complete!")
+print("=" * 60)

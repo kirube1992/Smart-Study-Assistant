@@ -1,143 +1,92 @@
-"""
-Optimized Flan-T5 Client for Smart Study Assistant
-"""
-
-import time
-from typing import List, Optional
-from transformers import pipeline, AutoTokenizer
-import logging
-
-logger = logging.getLogger(__name__)
-
+# src/ssa/ml/flan_t5_client.py
+from transformers import pipeline
 
 class FlanT5Client:
-    """Flan-T5 Client with proper prompt formatting"""
-    
-    def __init__(self, model_size: str = "small"):
-        self.model_size = model_size
-        self.model_name = f"google/flan-t5-{model_size}"
-        
-        print(f"📥 Loading Flan-T5-{model_size}...")
-        
-        # Load with proper settings for Flan-T5
+    def __init__(self, model_size="small"):
+        print(f"Loading Flan-T5-{model_size}...")
         self.generator = pipeline(
             "text2text-generation",
-            model=self.model_name,
-            device=-1,  # CPU
+            model=f"google/flan-t5-{model_size}",
+            device=-1,
             torch_dtype="auto"
         )
-        
-        # Load tokenizer separately for better control
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        
-        print(f"✅ Flan-T5-{model_size} ready! Max length: {self.tokenizer.model_max_length} tokens")
+        print(f"✅ Flan-T5-{model_size} loaded")
     
-    def _format_prompt(self, prompt: str) -> str:
-        """Format prompt for Flan-T5 model"""
-        # Flan-T5 works best with explicit Q&A format
-        if "?" in prompt and not prompt.strip().endswith(":"):
-            # Check if it looks like a question
-            question_words = ["what", "how", "why", "when", "where", "who", "explain", "describe"]
-            if any(prompt.lower().startswith(word) for word in question_words):
-                return f"Question: {prompt} Answer:"
-        
-        # For explanation/instruction prompts
-        if "explain" in prompt.lower() or "describe" in prompt.lower():
-            return f"Instruction: {prompt} Response:"
-        
-        return prompt
-    
-    def generate(
-        self,
-        prompt: str,
-        max_length: int = 300,
-        temperature: float = 0.7,
-        **kwargs
-    ) -> str:
+    def generate(self, prompt, max_length=300, **kwargs):
         """
-        Generate response with proper Flan-T5 formatting
+        Generate better responses with optimized parameters
         """
-        # Format the prompt for Flan-T5
-        formatted_prompt = self._format_prompt(prompt)
+        # Better prompt formatting
+        formatted_prompt = self._improve_prompt(prompt)
         
-        try:
-            # Generate with Flan-T5 optimized settings
-            result = self.generator(
-                formatted_prompt,
-                max_length=max_length,
-                temperature=temperature,
-                do_sample=True if temperature > 0 else False,
-                repetition_penalty=1.2,  # Reduce repetition
-                num_beams=1,  # Greedy search for speed
-                **kwargs
-            )
-            
-            response = result[0]['generated_text'].strip()
-            
-            # Clean up the response
-            if response.startswith("Answer:"):
-                response = response[7:].strip()
-            elif response.startswith("Response:"):
-                response = response[9:].strip()
-            
-            return response
-            
-        except Exception as e:
-            logger.error(f"Generation error: {e}")
-            return f"[LLM Error] Unable to generate response"
-    
-    def batch_generate(self, prompts: List[str], **kwargs) -> List[str]:
-        """Generate multiple responses"""
-        formatted_prompts = [self._format_prompt(p) for p in prompts]
-        try:
-            results = self.generator(formatted_prompts, **kwargs)
-            return [r['generated_text'].strip() for r in results]
-        except Exception as e:
-            logger.error(f"Batch generation error: {e}")
-            return [f"[Error] {str(e)}"] * len(prompts)
-    
-    def test_generation(self):
-        """Test the model with various prompts"""
-        test_cases = [
-            ("What is artificial intelligence?", "AI is the simulation of human intelligence by machines."),
-            ("Explain neural networks:", "Neural networks are computing systems inspired by biological brains."),
-            ("How does machine learning work?", "ML algorithms learn patterns from data to make predictions."),
-        ]
+        # Optimized generation parameters for Flan-T5
+        result = self.generator(
+            formatted_prompt,
+            max_new_tokens=max_length,  # Use max_new_tokens, not max_length
+            temperature=0.8,            # More creative (0.7-0.9)
+            do_sample=True,             # Enable sampling
+            top_p=0.95,                 # Nucleus sampling
+            repetition_penalty=1.1,     # Reduce repetition
+            num_beams=2,                # Beam search for better quality
+            early_stopping=True,        # Stop when good enough
+            **kwargs
+        )
         
-        print("\n🧪 Testing Flan-T5 generation...")
-        for prompt, expected_start in test_cases:
-            print(f"\n📝 Prompt: {prompt}")
-            response = self.generate(prompt, max_length=100, temperature=0.3)
-            print(f"🤖 Response: {response}")
-            
-            if len(response) > 10:
-                print("✅ Good response!")
+        response = result[0]['generated_text'].strip()
+        return self._clean_response(response)
+    
+    def _improve_prompt(self, prompt):
+        """
+        Drastically improve prompts for Flan-T5
+        """
+        prompt_lower = prompt.lower()
+        
+        # For questions
+        if "?" in prompt:
+            if any(word in prompt_lower for word in ["what is", "what are", "what does"]):
+                return f"Define and explain: {prompt}"
+            elif any(word in prompt_lower for word in ["how", "why"]):
+                return f"Explain step by step: {prompt}"
             else:
-                print("⚠️  Short response, might need better prompting")
-
-
-# Quick test
-if __name__ == "__main__":
-    print("Testing Flan-T5 Client...")
+                return f"Answer in detail: {prompt}"
+        
+        # For explanations
+        elif any(word in prompt_lower for word in ["explain", "describe", "tell me about"]):
+            return f"Provide a detailed explanation: {prompt}"
+        
+        # For summaries
+        elif "summar" in prompt_lower:
+            return prompt
+        
+        # Default
+        return f"Respond to: {prompt}"
     
-    # Test with the already downloaded model
-    client = FlanT5Client("small")
+    def _clean_response(self, response):
+        """Clean and improve response"""
+        # Remove prompt if repeated
+        lines = response.split('. ')
+        if len(lines) > 1:
+            # Take only the meaningful parts
+            cleaned = []
+            for line in lines:
+                if len(line) > 10 and not line.startswith(("The", "A", "An", "In", "For")):
+                    cleaned.append(line)
+            if cleaned:
+                return '. '.join(cleaned[:3]) + '.'
+        
+        return response
     
-    # Test generation
-    client.test_generation()
-    
-    # Test with your SSA-style prompts
-    test_prompts = [
-        "What is machine learning?",
-        "Explain backpropagation in neural networks",
-        "How do transformers work in NLP?"
-    ]
-    
-    print("\n" + "=" * 50)
-    print("SSA-Style Prompt Testing")
-    print("=" * 50)
-    
-    for prompt in test_prompts:
-        response = client.generate(prompt, max_length=150)
-        print(f"\n❓ {prompt}")
-        print(f"📝 {response[:100]}...")
+    def generate_better(self, prompt_type, content, **kwargs):
+        """
+        Specialized generation methods
+        """
+        if prompt_type == "qa":
+            prompt = f"Provide a comprehensive answer: {content}"
+        elif prompt_type == "explain":
+            prompt = f"Explain in detail with examples: {content}"
+        elif prompt_type == "summarize":
+            prompt = f"Summarize key points: {content}"
+        else:
+            prompt = content
+        
+        return self.generate(prompt, **kwargs)
