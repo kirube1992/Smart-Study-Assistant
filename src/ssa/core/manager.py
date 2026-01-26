@@ -526,47 +526,47 @@ class DocumentManager:
 
 
         
-    def init_llm(self):
-        """Initialize LLM (minimal version)"""
-        try:
-            from ..ml.flan_t5_client import FlanT5Client
-            from ..ml.prompt_engineer import PromptEngineer
+    # def init_llm(self):
+    #     """Initialize LLM (minimal version)"""
+    #     try:
+    #         from ..ml.flan_t5_client import FlanT5Client
+    #         from ..ml.prompt_engineer import PromptEngineer
             
-            self.llm = FlanT5Client("small")
-            self.prompt_eng = PromptEngineer()
-            print("✅ LLM initialized")
-            return True
-        except ImportError as e:
-            print(f"❌ Error: {e}")
-            return False
+    #         self.llm = FlanT5Client("small")
+    #         self.prompt_eng = PromptEngineer()
+    #         print("✅ LLM initialized")
+    #         return True
+    #     except ImportError as e:
+    #         print(f"❌ Error: {e}")
+    #         return False
 
-    def answer_with_llm(self, question):
-        """Simple LLM Q&A"""
-        if not hasattr(self, 'llm'):
-            return "LLM not initialized"
+    # def answer_with_llm(self, question):
+    #     """Simple LLM Q&A"""
+    #     if not hasattr(self, 'llm'):
+    #         return "LLM not initialized"
         
-        # Get relevant documents
-        results = self.semantic_search(question, top_k=2, threshold=0.2)
+    #     # Get relevant documents
+    #     results = self.semantic_search(question, top_k=2, threshold=0.2)
         
-        if results:
-            # Format context
-            context = self.prompt_eng.format_context(results)
-            prompt = self.prompt_eng.build_rag_prompt(context, question)
+    #     if results:
+    #         # Format context
+    #         context = self.prompt_eng.format_context(results)
+    #         prompt = self.prompt_eng.build_rag_prompt(context, question)
             
-            # Generate answer
-            answer = self.llm.generate(prompt, max_length=200)
+    #         # Generate answer
+    #         answer = self.llm.generate(prompt, max_length=200)
             
-            return {
-                "question": question,
-                "answer": answer,
-                "sources": [{"title": r["title"], "score": r["similarity"]} for r in results]
-            }
-        else:
-            return {
-                "question": question,
-                "answer": "No relevant documents found.",
-                "sources": []
-            }
+    #         return {
+    #             "question": question,
+    #             "answer": answer,
+    #             "sources": [{"title": r["title"], "score": r["similarity"]} for r in results]
+    #         }
+    #     else:
+    #         return {
+    #             "question": question,
+    #             "answer": "No relevant documents found.",
+    #             "sources": []
+    #         }
     def init_week13(self):
         """Week 13: Initialize DistilGPT2 LLM"""
         print("\n🚀 Week 13: Initializing DistilGPT2 LLM...")
