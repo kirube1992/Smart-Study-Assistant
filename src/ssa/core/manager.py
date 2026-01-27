@@ -744,3 +744,31 @@ class DocumentManager:
             "method": "RAG",
             "week": "13-14 hybrid"
         }
+    
+    # In your DocumentManager, add this method if missing:
+def train_week8_classifier(self):
+    """Train or load Week 8 document type classifier"""
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import Pipeline
+    
+    # Sample training data (you'd replace with real data)
+    training_data = [
+        ("artificial intelligence is the simulation", "tutorial"),
+        ("machine learning algorithms build models", "lecture"),
+        ("research shows neural networks can", "research"),
+        ("in this chapter we discuss", "textbook"),
+        ("the experiment results indicate", "research")
+    ]
+    
+    texts = [data[0] for data in training_data]
+    labels = [data[1] for data in training_data]
+    
+    # Create and train pipeline
+    self.doc_type_pipeline = Pipeline([
+        ('tfidf', TfidfVectorizer(max_features=1000)),
+        ('clf', LogisticRegression())
+    ])
+    
+    self.doc_type_pipeline.fit(texts, labels)
+    print("✅ Week 8 classifier trained")
