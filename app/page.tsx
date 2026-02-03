@@ -1,26 +1,26 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import FileUploadSection from '@/components/file-upload-section'
-import ChatSection from '@/components/chat-section'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { BookOpen, Sparkles } from 'lucide-react'
+import { useState } from "react";
+import FileUploadSection from "../components/file-upload-section";
+import ChatSection from "../components/chat-section";
+import { Card } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { BookOpen, Sparkles } from "lucide-react";
 
 export default function Home() {
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFileUpload = (file: File) => {
-    setUploadedFile(file)
-    setIsProcessing(true)
+    setUploadedFile(file);
+    setIsProcessing(true);
     // Simulate processing
-    setTimeout(() => setIsProcessing(false), 1000)
-  }
+    setTimeout(() => setIsProcessing(false), 1000);
+  };
 
   const handleClearFile = () => {
-    setUploadedFile(null)
-  }
+    setUploadedFile(null);
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-card to-background">
@@ -32,8 +32,12 @@ export default function Home() {
               <BookOpen className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Smart Study</h1>
-              <p className="text-xs text-muted-foreground">AI Learning Assistant</p>
+              <h1 className="text-2xl font-bold text-foreground">
+                Smart Study
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                AI Learning Assistant
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
@@ -59,16 +63,22 @@ export default function Home() {
           {/* Right: Chat Interface */}
           <div className="lg:col-span-2">
             {uploadedFile ? (
-              <ChatSection uploadedFile={uploadedFile} isProcessing={isProcessing} />
+              <ChatSection
+                uploadedFile={uploadedFile}
+                isProcessing={isProcessing}
+              />
             ) : (
               <Card className="h-full min-h-96 flex flex-col items-center justify-center p-8 text-center bg-card/50 backdrop-blur-sm border border-border/50">
                 <div className="max-w-sm">
                   <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <BookOpen className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">No Document Uploaded</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    No Document Uploaded
+                  </h3>
                   <p className="text-muted-foreground text-sm mb-6">
-                    Upload a file to start your study session. Ask any question about the content.
+                    Upload a file to start your study session. Ask any question
+                    about the content.
                   </p>
                   <div className="flex flex-col gap-2 text-xs text-muted-foreground">
                     <div>Supported formats: PDF, TXT, DOC, DOCX, Images</div>
@@ -84,26 +94,36 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
             {[
               {
-                title: 'Extract Knowledge',
-                description: 'Automatically extract key concepts and summaries from any document'
+                title: "Extract Knowledge",
+                description:
+                  "Automatically extract key concepts and summaries from any document",
               },
               {
-                title: 'Ask Questions',
-                description: 'Get instant answers to any question about your uploaded content'
+                title: "Ask Questions",
+                description:
+                  "Get instant answers to any question about your uploaded content",
               },
               {
-                title: 'Smart Analysis',
-                description: 'Receive detailed explanations with context and examples'
-              }
+                title: "Smart Analysis",
+                description:
+                  "Receive detailed explanations with context and examples",
+              },
             ].map((feature, idx) => (
-              <Card key={idx} className="p-6 bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-colors">
+              <Card
+                key={idx}
+                className="p-6 bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-colors"
+              >
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
                     <Sparkles className="w-4 h-4 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground mb-1">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    <h3 className="font-semibold text-foreground mb-1">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {feature.description}
+                    </p>
                   </div>
                 </div>
               </Card>
@@ -112,5 +132,5 @@ export default function Home() {
         )}
       </div>
     </main>
-  )
+  );
 }

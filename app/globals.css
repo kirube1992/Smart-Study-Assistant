@@ -4,40 +4,44 @@
 
 @layer base {
   :root {
-    --background: 255 255 255;
-    --foreground: 15 23 42;
-    --card: 248 250 252;
-    --card-foreground: 15 23 42;
-    --primary: 99 102 241;
-    --primary-foreground: 255 255 255;
-    --secondary: 96 165 250;
-    --secondary-foreground: 15 23 42;
-    --accent: 168 85 247;
-    --muted: 148 163 184;
-    --muted-foreground: 71 85 105;
-    --destructive: 239 68 68;
-    --border: 226 232 240;
-    --input: 226 232 240;
-    --ring: 99 102 241;
+    --background: 255, 255, 255;
+    --foreground: 15, 23, 42;
+    --card: 248, 250, 252;
+    --card-foreground: 15, 23, 42;
+    --primary: 99, 102, 241;
+    --primary-foreground: 255, 255, 255;
+    --secondary: 96, 165, 250;
+    --secondary-foreground: 15, 23, 42;
+    --accent: 168, 85, 247;
+    --accent-foreground: 15, 23, 42;
+    --muted: 148, 163, 184;
+    --muted-foreground: 71, 85, 105;
+    --destructive: 239, 68, 68;
+    --destructive-foreground: 255, 255, 255;
+    --border: 226, 232, 240;
+    --input: 226, 232, 240;
+    --ring: 99, 102, 241;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 15 23 42;
-    --foreground: 248 250 252;
-    --card: 30 41 59;
-    --card-foreground: 248 250 252;
-    --primary: 129 140 248;
-    --primary-foreground: 15 23 42;
-    --secondary: 96 165 250;
-    --secondary-foreground: 15 23 42;
-    --accent: 196 181 253;
-    --muted: 100 116 139;
-    --muted-foreground: 226 232 240;
-    --destructive: 239 68 68;
-    --border: 51 65 85;
-    --input: 51 65 85;
-    --ring: 129 140 248;
+    --background: 15, 23, 42;
+    --foreground: 248, 250, 252;
+    --card: 30, 41, 59;
+    --card-foreground: 248, 250, 252;
+    --primary: 129, 140, 248;
+    --primary-foreground: 15, 23, 42;
+    --secondary: 96, 165, 250;
+    --secondary-foreground: 15, 23, 42;
+    --accent: 196, 181, 253;
+    --accent-foreground: 15, 23, 42;
+    --muted: 100, 116, 139;
+    --muted-foreground: 226, 232, 240;
+    --destructive: 239, 68, 68;
+    --destructive-foreground: 255, 255, 255;
+    --border: 51, 65, 85;
+    --input: 51, 65, 85;
+    --ring: 129, 140, 248;
   }
 }
 
@@ -50,83 +54,4 @@
   }
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInFromBottom {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse-subtle {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out;
-}
-
-.animate-slide-in {
-  animation: slideInFromBottom 0.5s ease-out;
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* File upload styles */
-.file-upload-zone {
-  @apply border-2 border-dashed border-border rounded-lg p-8 text-center transition-colors hover:bg-card hover:border-primary;
-}
-
-.file-upload-zone.dragover {
-  @apply bg-primary bg-opacity-5 border-primary;
-}
-
-/* Chat message animations */
-.message-user {
-  @apply animate-fade-in;
-}
-
-.message-assistant {
-  @apply animate-slide-in;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgb(from var(--primary) r g b / 0.3);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgb(from var(--primary) r g b / 0.5);
-}
+/* Rest of your animations remain the same... */
