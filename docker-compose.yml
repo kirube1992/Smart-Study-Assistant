@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Python Backend (FastAPI)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    container_name: ssa-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHON_ENV=development
+      - LOG_LEVEL=info
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+      - ./api.py:/app/api.py
+    command: uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - ssa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # Next.js Frontend
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    container_name: ssa-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NODE_ENV=development
+    volumes:
+      - ./app:/app/app
+      - ./components:/app/components
+      - ./lib:/app/lib
+      - ./hooks:/app/hooks
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - ssa-network
+    command: npm run dev
+
+networks:
+  ssa-network:
+    driver: bridge
+
+volumes:
+  data:
+    driver: local

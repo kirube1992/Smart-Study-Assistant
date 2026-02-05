@@ -1,16 +1,13 @@
 
 
-#Smart Study Assistant
+# Smart Study Assistant
 
 Your Personal AI-Powered Learning Companion
 
-![alt text](https://img.shields.io/badge/Python-3.9%2B-blue)
-
-
-![alt text](https://img.shields.io/badge/License-MIT-yellow.svg)
-
-
-![alt text](https://img.shields.io/github/stars/YOUR_GITHUB_USERNAME/ssa?style=social)
+![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)
+![Node 18+](https://img.shields.io/badge/Node-18%2B-green)
+![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Phase 5](https://img.shields.io/badge/Phase-5-blueviolet)
 
 1. Project Overview
 
@@ -32,164 +29,211 @@ Your AI Study Buddy: An autonomous agent capable of orchestrating various AI too
 
 Each phase of this project integrates new AI/engineering concepts directly into the SSA, making it progressively smarter and more functional.
 
-3. Features
+## Features
 
-Phase 1: Data Management & Foundation
+### Phase 1: Data Management & Foundation ✅
+- Document Ingestion: Add study materials via CLI or web UI
+- Structured Storage: Documents with metadata (title, type, difficulty, date)
+- Basic Analytics: Document count, word count, statistics
 
-Document Ingestion (CLI): Add text documents from local files.
+### Phase 2: Machine Learning Fundamentals ✅
+- Automatic Document Classification: Tag documents by type
+- Content Clustering: Group semantically similar materials
+- Difficulty Scoring: Assess content complexity
 
-Structured Document Storage: Documents are represented as objects with title, content, path, date.
+### Phase 3: Deep Learning Capabilities ✅
+- Semantic Embeddings: Transformer-based document vectors
+- Semantic Search: Find documents by meaning, not keywords
+- Extractive Summarization: Generate concise summaries
 
-Basic Analytics: (e.g., Count of documents, word count).
+### Phase 4: LLMs & AI Agents ✅
+- Generative Q&A: Answer questions from your documents
+- Smart Agent: Automatically selects the best tool for your query
+- Multi-tool Orchestration: Search, summarize, classify in one query
 
-Phase 2: Machine Learning Fundamentals
+### Phase 5: MLOps & Deployment ✅
+- FastAPI Backend: Production-ready REST API
+- Next.js Frontend: Modern, responsive web interface
+- Docker Support: Single-command deployment
+- Local Development Setup: Complete development environment
 
-Document Type Classification: Automatically tag documents (e.g., Lecture, Article).
+## Technologies Used
 
-Content Clustering: Group semantically similar documents.
+### Backend
+- **Python 3.9+** - Core language
+- **FastAPI** - REST API framework
+- **PyTorch** - Deep learning
+- **Hugging Face Transformers** - NLP models
+- **Sentence Transformers** - Semantic embeddings
+- **Scikit-learn** - Traditional ML
+- **NumPy & Pandas** - Data processing
+- **LangChain** - LLM orchestration
 
-Phase 3: Deep Learning Capabilities
+### Frontend
+- **Next.js 16** - React framework
+- **TypeScript** - Type-safe development
+- **React 19** - UI library
+- **Tailwind CSS** - Styling
+- **shadcn/ui** - Component library
+- **Recharts** - Data visualization
+- **Lucide React** - Icons
 
-Semantic Embeddings: Documents are represented by meaningful vectors.
+### Infrastructure
+- **Docker & Docker Compose** - Containerization
+- **Uvicorn** - ASGI server
+- **Git & GitHub** - Version control
 
-Extractive Summarization: Generate short summaries of document sections.
+## Quick Start
 
-Phase 4: LLMs & AI Agents
+### Prerequisites
+- Python 3.9+
+- Node.js 18+
+- Docker & Docker Compose (optional)
 
-Generative Q&A: Answer questions using LLMs based on document context.
+### Installation
 
-Contextual Explanations: Provide tailored explanations.
+#### Option 1: Local Development (Recommended)
 
-Agent Orchestration: An AI agent selects the best tool for your request.
+```bash
+# Clone repository
+git clone https://github.com/kirube1992/Smart-Study-Assistant.git
+cd Smart-Study-Assistant
 
-Phase 5: MLOps & Deployment
+# Run setup script
+chmod +x run.sh
+./run.sh
 
-RESTful API: All SSA functionalities accessible via a FastAPI endpoint.
-
-Dockerization: Project containerized for consistent deployment.
-
-CI/CD Pipeline: Automated testing and deployment.
-
-4. Technologies Used
-
-Core Language: Python 3.9+
-
-Data Handling: NumPy, Pandas
-
-Machine Learning: Scikit-learn
-
-Deep Learning: TensorFlow / Keras
-
-Natural Language Processing: Hugging Face transformers, sentence-transformers
-
-LLM Orchestration: LangChain / LangGraph
-
-API Development: FastAPI
-
-Containerization: Docker
-
-Version Control: Git, GitHub
-
-5. Setup & Installation
-Clone the Repository:
-
-code
-Bash
-download
-content_copy
-expand_less
-git clone https://github.com/YOUR_GITHUB_USERNAME/ssa.git
-cd ssa
-
-Create and Activate a Virtual Environment:
-
-code
-Bash
-download
-content_copy
-expand_less
-python -m venv venv
-# On Windows:
-.\venv\Scripts\activate
-# On macOS/Linux:
+# In Terminal 1 - Start Backend
 source venv/bin/activate
+uvicorn api:app --reload --port 8000
 
-Install Dependencies:
-(Initially, this might be very short. It will grow.)
+# In Terminal 2 - Start Frontend
+npm run dev
+```
 
-code
-Bash
-download
-content_copy
-expand_less
-pip install -r requirements.txt
+Then open `http://localhost:3000`
 
-code
-Bash
-download
-content_copy
-expand_less
-export OPENAI_API_KEY="your_openai_key_here"
+#### Option 2: Docker (All-in-One)
 
-6. How to Run (Local)
+```bash
+# Build and run everything
+docker-compose up --build
 
-To run the CLI for document ingestion (Week 1):
+# Services will be available at:
+# Frontend: http://localhost:3000
+# API: http://localhost:8000
+# API Docs: http://localhost:8000/docs
+```
 
-code
-Bash
-download
-content_copy
-expand_less
-python main.py add_document path/to/your/notes.txt
-python main.py list_documents
+For detailed setup instructions, see [SETUP.md](./SETUP.md)
 
-To start the API server (Phase 5):
+## Usage
 
-code
-Bash
-download
-content_copy
-expand_less
-uvicorn app:app --reload
+### Web Interface
+
+1. **Upload Documents** - Go to Documents tab and upload study materials
+2. **Search** - Use semantic search to find relevant documents
+3. **Ask Questions** - Get answers from your materials with AI
+4. **View Analytics** - See insights about your knowledge base
+
+### API Usage
+
+**Upload Document**
+```bash
+curl -X POST "http://localhost:8000/documents/ingest" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"My Notes","content":"...","document_type":"lecture"}'
+```
+
+**Search Documents**
+```bash
+curl -X POST "http://localhost:8000/documents/search" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"machine learning","top_k":5}'
+```
+
+**Ask a Question**
+```bash
+curl -X POST "http://localhost:8000/qa/ask" \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is neural networks?","use_agent":true}'
+```
+
+See [Full API Documentation](http://localhost:8000/docs) when running the backend
 
 
-7. Development & Contribution
+## Development
 
-Branching Strategy: We use feature branches. Please create a new branch for each new feature or bug fix: git checkout -b feature/your-feature-name
+### Project Structure
+```
+Smart-Study-Assistant/
+├── api.py                 # FastAPI application
+├── src/ssa/              # Python backend modules
+│   ├── core/             # Document management
+│   ├── ml/               # ML models & analysis
+│   ├── qa/               # Q&A system
+│   └── agent/            # AI agent
+├── app/                  # Next.js application
+├── components/           # React components
+├── docker-compose.yml    # Container orchestration
+└── SETUP.md             # Setup guide
+```
 
-Commit Messages: Please write clear and concise commit messages.
+### Contributing
+1. Create a feature branch: `git checkout -b feature/your-feature`
+2. Make changes following PEP 8 (Python) and ESLint (JavaScript) guidelines
+3. Test your changes locally
+4. Commit with clear messages
+5. Push and create a pull request
 
-Code Style: Follow PEP 8 guidelines. 
+### Code Style
+- **Python**: PEP 8, type hints recommended
+- **JavaScript/TypeScript**: ESLint config provided
+- **Git**: Clear, descriptive commit messages 
 
-9. Learning Journey & Milestones
+## Roadmap & Milestones
 
-This project is part of a 120-day AI Engineering roadmap. Here's a high-level overview of our progress:
+This project follows a 120-day AI Engineering learning path:
 
-Phase 1: Data Management & Foundation - (Completed by [Date]) (e.g., Oct 27)
+- ✅ **Phase 1**: Data Management & Foundation
+- ✅ **Phase 2**: ML Fundamentals & Intelligence
+- ✅ **Phase 3**: Deep Learning & Semantic Understanding
+- ✅ **Phase 4**: LLMs & AI Agents
+- ✅ **Phase 5**: MLOps & Deployment (Current - 70% Complete)
+- 🚀 **Phase 6**: Portfolio & Future Trends
 
-Phase 2: ML Fundamentals - (Completed by [Date]) (e.g., Dec 1)
+### Current Status: 70-75% Complete
 
-Phase 3: Deep Learning Capabilities - (Completed by [Date]) (e.g., Dec 29)
+**Completed:**
+- All core Python backend (Phases 1-4)
+- FastAPI REST API implementation
+- Next.js web frontend with dashboard
+- Docker containerization
+- Local development setup
 
-Phase 4: LLMs & AI Agents - (Completed by [Date]) (e.g., Jan 12)
+**In Progress:**
+- Advanced error handling and logging
+- Comprehensive testing suite
+- Performance optimization
 
-Phase 5: MLOps & Deployment - (Completed by [Date]) (e.g., Jan 26)
+**Next Steps:**
+- CI/CD pipeline setup
+- Advanced personalization features
+- Multi-modal input support
+- Cloud deployment guides
 
-Phase 6: Portfolio & Future Trends - (Completed by [Date]) (e.g., Feb 2)
+## Future Enhancements
 
-11. Future Enhancements (Roadmap)
-
-UI Development: Create a web-based or desktop graphical user interface.
-
-Multi-modal Input: Support images, audio, or video as study materials.
-
-Flashcard Generation: Automatically generate flashcards from documents.
-
-Integration with Learning Platforms: Connect with Notion, Anki, Google Classroom, etc.
-
-Advanced Personalization: More sophisticated adaptive learning algorithms.
-
-Voice Assistant Integration: Allow interaction via voice commands.
+- **Multi-modal Support**: Images, PDFs, audio, and video materials
+- **Flashcard Generation**: Automatic quiz generation from documents
+- **External Integrations**: Notion, Anki, Google Classroom sync
+- **Advanced Personalization**: Adaptive learning based on performance
+- **Voice Interface**: Voice-based queries and interactions
+- **Mobile App**: Native iOS/Android applications
+- **Collaborative Learning**: Share materials and notes with study groups
+- **Advanced Analytics**: Learning patterns and recommendations
+- **Offline Mode**: Work without internet connection
+- **Real-time Collaboration**: Live study sessions
 
 12. License
 
