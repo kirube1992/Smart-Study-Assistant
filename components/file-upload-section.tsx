@@ -1,57 +1,57 @@
-'use client'
+"use client";
 
-import { useRef, useState } from 'react'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Upload, FileText, X, Check } from 'lucide-react'
+import { useRef, useState } from "react";
+import { Card } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Upload, FileText, X, Check } from "lucide-react";
 
 interface FileUploadSectionProps {
-  onFileUpload: (file: File) => void
-  uploadedFile: File | null
-  isProcessing: boolean
-  onClearFile: () => void
+  onFileUpload: (file: File) => void;
+  uploadedFile: File | null;
+  isProcessing: boolean;
+  onClearFile: () => void;
 }
 
 export default function FileUploadSection({
   onFileUpload,
   uploadedFile,
   isProcessing,
-  onClearFile
+  onClearFile,
 }: FileUploadSectionProps) {
-  const [dragActive, setDragActive] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [dragActive, setDragActive] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true)
-    } else if (e.type === 'dragleave') {
-      setDragActive(false)
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
     }
-  }
+  };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
 
-    const files = e.dataTransfer.files
+    const files = e.dataTransfer.files;
     if (files && files[0]) {
-      onFileUpload(files[0])
+      onFileUpload(files[0]);
     }
-  }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
+    const files = e.target.files;
     if (files && files[0]) {
-      onFileUpload(files[0])
+      onFileUpload(files[0]);
     }
-  }
+  };
 
   const handleClick = () => {
-    inputRef.current?.click()
-  }
+    inputRef.current?.click();
+  };
 
   return (
     <div className="space-y-4">
@@ -63,7 +63,9 @@ export default function FileUploadSection({
                 <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-foreground truncate">{uploadedFile.name}</h3>
+                <h3 className="font-semibold text-foreground truncate">
+                  {uploadedFile.name}
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   {(uploadedFile.size / 1024).toFixed(1)} KB
                 </p>
@@ -88,8 +90,8 @@ export default function FileUploadSection({
         <Card
           className={`p-8 border-2 border-dashed transition-all ${
             dragActive
-              ? 'border-primary bg-primary/5'
-              : 'border-border hover:border-primary/50 bg-card/50'
+              ? "border-primary bg-primary/5"
+              : "border-border hover:border-primary/50 bg-card/50"
           }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -110,7 +112,9 @@ export default function FileUploadSection({
             </div>
 
             <div className="text-center">
-              <h3 className="font-semibold text-foreground mb-1">Upload your study material</h3>
+              <h3 className="font-semibold text-foreground mb-1">
+                Upload your study material
+              </h3>
               <p className="text-sm text-muted-foreground">
                 Drag and drop or click to select
               </p>
@@ -133,14 +137,19 @@ export default function FileUploadSection({
 
       {/* Quick actions */}
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quick Tips</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Quick Tips
+        </p>
         <div className="space-y-2">
           {[
-            'Use clear, specific questions',
-            'Ask for summaries or key points',
-            'Request explanations of concepts'
+            "Use clear, specific questions",
+            "Ask for summaries or key points",
+            "Request explanations of concepts",
           ].map((tip, idx) => (
-            <div key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+            <div
+              key={idx}
+              className="flex items-start gap-2 text-sm text-muted-foreground"
+            >
               <span className="text-primary mt-0.5">•</span>
               <span>{tip}</span>
             </div>
@@ -148,5 +157,5 @@ export default function FileUploadSection({
         </div>
       </div>
     </div>
-  )
+  );
 }
