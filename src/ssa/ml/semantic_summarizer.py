@@ -1,7 +1,6 @@
-from typing import Optional, List, Dict
-import numpy as np
+﻿from typing import Optional, List, Dict
 import re
-from src.ssa.ml.transformer_embedder import TransformerEmbedder
+from .transformer_embedder import TransformerEmbedder
 
 
 class SemanticSummarizer:
@@ -12,7 +11,6 @@ class SemanticSummarizer:
     
     def __init__(self, embedder=None, num_sentences: int = 3):
         if embedder is None:
-            from .transformer_embedder import TransformerEmbedder
             self.embedder = TransformerEmbedder(model_name="all-MiniLM-L6-v2")
             self.embedder.load_model()
         else:

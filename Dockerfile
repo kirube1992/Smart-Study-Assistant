@@ -9,11 +9,12 @@ RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     make \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies
-COPY requirment.txt .
-RUN pip install --no-cache-dir -r requirment.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
 COPY src/ ./src/
@@ -25,8 +26,6 @@ COPY data/ ./data/
 EXPOSE 8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')"
 
 # Start FastAPI server
 CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
@@ -45,9 +44,6 @@ RUN npm install -g pnpm && pnpm install --frozen-lockfile
 # Copy frontend code
 COPY app/ ./app/
 COPY components/ ./components/
-COPY lib/ ./lib/
-COPY hooks/ ./hooks/
-COPY public/ ./public/
 COPY next.config.ts tsconfig.json tailwind.config.ts postcss.config.js ./
 
 # Build Next.js
